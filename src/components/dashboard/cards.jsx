@@ -35,45 +35,27 @@ import {
   unBlockCardDetails,
 } from "../../@redux/action/account";
 import regex from "./../utility/regex";
+import { getCardsAPI } from "../../@redux/action/account";
 
 export const Cards = () => {
+  const dispatch = useDispatch();
   const cards = useSelector((state) => state.account.cards);
 
+  const cardHolderId = useSelector((state) => state.auth.user?.cardHolderId);
+  const userId = useSelector((state) => state.auth.user?.userId);
+
+  useEffect(() => {
+    if (userId && cardHolderId) {
+      dispatch(getCardsAPI(userId, cardHolderId, "update"));
+    }
+  }, [userId, cardHolderId, dispatch]);
   const [isLoading, setLoading] = useState(false);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const SetPage = () => {
     dispatch(setActiveTab("Dashboard"));
     navigate("/dashboard");
   };
-
-  const userDetails = useSelector((state) => state.auth.userDetails);
-
-  if (!userDetails) {
-    return (
-      <div className="d-flex flex-column justify-content-center align-items-center gap-4 vh-80">
-        <div className="d-flex flex-column justify-content-center align-items-center gap-1">
-          <img src="/kyc.png" alt="" style={{ width: 250 }} />
-
-          <label className="text-secondary">
-            Whoops! It looks like you haven't registered yet.
-          </label>
-        </div>
-
-        <CustomButton
-          label={"Register Now"}
-          icon={<AppRegistration />}
-          style={{ width: 350, margin: "0 auto" }}
-          isLoading={isLoading}
-          onClick={() => {
-            dispatch(setActiveTab("Dashboard"));
-            navigate("/dashboard");
-          }}
-        />
-      </div>
-    );
-  }
 
   const type = useSelector((state) => state.auth.type);
   const kybDetails = useSelector((state) => state.auth.kycDetails);
@@ -225,26 +207,6 @@ export const Cards = () => {
     setOpenActions(false);
   };
 
-  if (account.length === 0) {
-    return (
-      <div className="d-flex flex-column justify-content-center align-items-center gap-4 vh-80">
-        <img src="/banks/bank-icon.svg" alt="" style={{ width: "10%" }} />
-
-        <label className="text-secondary">
-          It looks like you haven't added your account yet.
-        </label>
-
-        <CustomButton
-          label={"Add Account"}
-          icon={<AccountBalanceWallet />}
-          style={{ width: 350, margin: "0 auto" }}
-          isLoading={isLoading}
-          onClick={() => addAccount({ dispatch, setLoading, SetPage })}
-        />
-      </div>
-    );
-  }
-
   const AddCardModalContent = () => {
     const dispatch = useDispatch();
     const [cardLoading, setCardLoading] = useState(false);
@@ -305,20 +267,6 @@ export const Cards = () => {
             </div>
           </div>
 
-          {/* <CreditCardView
-            item={{
-              accountid: "4e60373e30ff3cec08365d349f79ef30",
-              last4: cardLast4Digits,
-              createdAt: "2025-01-14",
-              cardid: "89638ee1b66e0456589d22bbb8c35e5a",
-              currency: "USD",
-              type: "virtual",
-              cardStatus: "active",
-            }}
-            dispatch={dispatch}
-            hide={true}
-          /> */}
-
           <CustomButton
             icon={<CreditCard />}
             onClick={async () =>
@@ -351,20 +299,6 @@ export const Cards = () => {
           >
             Assign A Physical Card
           </h5>
-
-          {/* <CreditCardView
-            item={{
-              accountid: "4e60373e30ff3cec08365d349f79ef30",
-              last4: cardLast4Digits,
-              createdAt: "2025-01-14",
-              cardid: "89638ee1b66e0456589d22bbb8c35e5a",
-              currency: "USD",
-              type: "physical",
-              cardStatus: "active",
-            }}
-            dispatch={dispatch}
-            hide={true}
-          /> */}
 
           <div className="d-flex align-items-center gap-3 my-1">
             <CustomInput
@@ -445,7 +379,7 @@ export const Cards = () => {
 
           <div className="">
             {/* Activate Card */}
-            {activeCard.cardStatus === "pending activation" && (
+            {activeCard.cardStatus?.toLowerCase() === "pending activation" && (
               <>
                 <div className="card-action-container">
                   <CustomButton
@@ -454,7 +388,7 @@ export const Cards = () => {
                     onClick={async () =>
                       await dispatch(
                         activateCardDetails({
-                          cardId: activeCard.cardid,
+                          cardId: activeCard.cardHashId,
                           setCardLoading,
                           handleCloseCardModalActions,
                         })
@@ -475,7 +409,7 @@ export const Cards = () => {
             )}
 
             {/* Unblock Card */}
-            {activeCard.cardStatus === "locked" && (
+            {activeCard.cardStatus?.toLowerCase() === "locked" && (
               <>
                 <div className="card-action-container">
                   <CustomButton
@@ -484,7 +418,7 @@ export const Cards = () => {
                     onClick={async () =>
                       await dispatch(
                         unBlockCardDetails({
-                          cardId: activeCard.cardid,
+                          cardId: activeCard.cardHashId,
                           setCardLoading,
                           handleCloseCardModalActions,
                         })
@@ -505,7 +439,7 @@ export const Cards = () => {
             )}
 
             {/* Set PIN */}
-            {activeCard.type === "physical" && (
+            {activeCard.cardType?.toLowerCase() === "gpr_phy" && (
               <div className="card-action-container">
                 <h5 className="fw-bold">Set PIN</h5>
                 <CustomInput
@@ -525,7 +459,7 @@ export const Cards = () => {
                     await dispatch(
                       setPINCard({
                         pin,
-                        cardId: activeCard.cardid,
+                        cardId: activeCard.cardHashId,
                         setCardLoading,
                         handleCloseCardModalActions,
                       })
@@ -537,7 +471,7 @@ export const Cards = () => {
             )}
 
             {/* Temporary Block Card */}
-            {activeCard.cardStatus === "active" && (
+            {activeCard.cardStatus?.toLowerCase() === "active" && (
               <div className="card-action-container">
                 <h5 className="fw-bold">Temporary Block Card</h5>
                 <CustomInput
@@ -558,7 +492,7 @@ export const Cards = () => {
                     await dispatch(
                       temporaryBlockCardDetails({
                         reason: tBlockReason,
-                        cardId: activeCard.cardid,
+                        cardId: activeCard.cardHashId,
                         setCardLoading,
                         handleCloseCardModalActions,
                       })
@@ -570,7 +504,7 @@ export const Cards = () => {
             )}
 
             {/* Permanent Block Card */}
-            {activeCard.cardStatus !== "suspended" && (
+            {activeCard.cardStatus?.toLowerCase() !== "suspended" && (
               <div className="card-action-container">
                 <h5 className="fw-bold">Permanent Block Card</h5>
 
@@ -593,7 +527,7 @@ export const Cards = () => {
                     await dispatch(
                       permanentBlockCardDetails({
                         reason: pBlockReason,
-                        cardId: activeCard.cardid,
+                        cardId: activeCard.cardHashId,
                         setCardLoading,
                         handleCloseCardModalActions,
                       })
@@ -604,7 +538,7 @@ export const Cards = () => {
               </div>
             )}
 
-            {activeCard.cardStatus === "suspended" && (
+            {activeCard.cardStatus?.toLowerCase() === "suspended" && (
               <>
                 <div className="fw-bold fs-7 text-danger px-5 text-center mt-5 pt-4">
                   No actions available for "Suspended" cards.
@@ -648,7 +582,7 @@ export const Cards = () => {
               {cards.map((item, index) => (
                 <CreditCardView
                   key={index}
-                  item={item}
+                  item={item} // Pass the entire item directly
                   dispatch={dispatch}
                   handleOpen={() => openCardModalActions({ item })}
                 />

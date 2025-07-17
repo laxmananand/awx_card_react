@@ -204,14 +204,25 @@ export const getAccountStatementAPI =
 
 // Get List of Cards
 export const getCardsAPI =
-  (userId, accountId, type) => async (dispatch, getState) => {
+  (userId, cardHolderId, type) => async (dispatch, getState) => {
     // Check existing account in Redux state
     if (type === "update") {
       try {
+        // const id = useSelector((state) => state.auth.user.userId);
+        // console.log("User ID:", id);
+        // const cardHolderId = useSelector(
+        //   (state) => state.auth.user.cardHolderId
+        // );
+        console.log("Card Holder ID:", cardHolderId);
+        console.log("userId:", userId);
         //const url = `${process.env.VITE_apiurl}/caas/card/list/${userId}/${accountId}`;
-        const url = `${process.env.VITE_API_ZOOQ}/expense/listcardsAWX`;
-        const response = await axiosInstance.get(url); // Use POST for account creation
-        debugger;
+        // const url = `${process.env.VITE_API_ZOOQ}/expense/listcardsAWX`;
+        const url = `${process.env.VITE_API_ZOOQ}/expense/listCardsByCardHolderId_AWX`;
+        const response = await axiosInstance.get(url, {
+          params: { cardholder_id: cardHolderId },
+          headers: { "x-user-id": userId },
+        }); // Use POST for account creation
+        console.log("Cards response:", response.data);
         if (response.data.data.length > 0) {
           await dispatch(setCards(response.data.data)); // Refresh account details
         } else {
@@ -230,15 +241,18 @@ export const getCardsAPI =
 
 // Get Card Details
 export const getCardsDetailsAPI = (cardId) => async (dispatch, getState) => {
-  let userId = getState().auth?.userDetails?.id;
-  let accountId = getState().account?.accountDetails[0]?.accountid;
+  let userId = getState().auth?.user?.userId;
+  // let accountId = getState().account?.accountDetails[0]?.accountid;
 
   try {
-    const url = `${process.env.VITE_apiurl}/caas/card/showtoken/${userId}/${accountId}/${cardId}`;
+    const url = `${process.env.VITE_API_ZOOQ}/awx/card-details-awx`;
 
     console.log(url);
 
-    const response = await axiosInstance.post(url); // Use POST for account creation
+    const response = await axiosInstance.get(url, {
+      params: { id: cardId },
+      headers: { "x-user-id": userId },
+    }); // Use POST for account creation
     if (response.data.status === "BAD_REQUEST") {
       toast.error(
         "Card details not available for the given card. Try again later or contact your admin for more information."
@@ -356,6 +370,8 @@ export const addPhysicalCard =
 
 import { SECRET_KEY } from "../../@component_v2/CustomComponents";
 import { setPINblock } from "../../components/utility/encryption";
+import { use } from "react";
+import { param } from "jquery";
 
 //Set PIN
 export const setPINCard =

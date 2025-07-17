@@ -2121,30 +2121,30 @@ export const Settings = () => {
 
   const userDetails = useSelector((state) => state.auth.userDetails);
 
-  if (!userDetails) {
-    return (
-      <div className="d-flex flex-column justify-content-center align-items-center gap-4 vh-80">
-        <div className="d-flex flex-column justify-content-center align-items-center gap-1">
-          <img src="/kyc.png" alt="" style={{ width: 250 }} />
+  // if (!userDetails) {
+  //   return (
+  //     <div className="d-flex flex-column justify-content-center align-items-center gap-4 vh-80">
+  //       <div className="d-flex flex-column justify-content-center align-items-center gap-1">
+  //         <img src="/kyc.png" alt="" style={{ width: 250 }} />
 
-          <label className="text-secondary">
-            Whoops! It looks like you haven't registered yet.
-          </label>
-        </div>
+  //         <label className="text-secondary">
+  //           Whoops! It looks like you haven't registered yet.
+  //         </label>
+  //       </div>
 
-        <CustomButton
-          label={"Register Now"}
-          icon={<AppRegistration />}
-          style={{ width: 350, margin: "0 auto" }}
-          isLoading={isLoading}
-          onClick={() => {
-            dispatch(moveTo("Dashboard"));
-            navigate("/dashboard");
-          }}
-        />
-      </div>
-    );
-  }
+  //       <CustomButton
+  //         label={"Register Now"}
+  //         icon={<AppRegistration />}
+  //         style={{ width: 350, margin: "0 auto" }}
+  //         isLoading={isLoading}
+  //         onClick={() => {
+  //           dispatch(moveTo("Dashboard"));
+  //           navigate("/dashboard");
+  //         }}
+  //       />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div>

@@ -41,10 +41,20 @@ export const cognitoGetUser =
 
       const response = await axiosInstance.post(url, body);
       dispatch(setLoginEmail(email));
+      console.log("cognito get user: ", response.data);
+      const findCardholder = response.data?.userAttributes?.find(
+        (item) => item.name === "custom:cardholder_id"
+      );
+      const userId = response.data?.userAttributes?.find(
+        (item) => item.name === "custom:zoqq_user_id"
+      );
+      //console.log("findCardholder: ", findCardholder);
       dispatch(
         setUser({
           ...response.data,
-          userId: "2ec3aaa9-1b6a-4175-883f-0c47cf264718",
+          // userId: "2ec3aaa9-1b6a-4175-883f-0c47cf264718",
+          userId: userId?.value,
+          cardHolderId: findCardholder?.value,
         })
       );
 

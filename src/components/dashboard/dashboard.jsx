@@ -1244,17 +1244,17 @@ export const Dashboard = () => {
     }
   };
 
-  useEffect(() => {
-    try {
-      if (!isOnboarded && !kycStatus) {
-        setStage(0);
-      } else if (isOnboarded && kycStatus) {
-        setStage(2);
-      }
-    } catch (e) {
-    } finally {
-    }
-  }, []);
+  // useEffect(() => {
+  //   try {
+  //     if (!isOnboarded && !kycStatus) {
+  //       setStage(0);
+  //     } else if (isOnboarded && kycStatus) {
+  //       setStage(2);
+  //     }
+  //   } catch (e) {
+  //   } finally {
+  //   }
+  // }, []);
 
   //Form variables
   const [title, setTitle] = useState(null);
@@ -1566,7 +1566,10 @@ export const Dashboard = () => {
 
   useEffect(() => {
     console.log("Dashboard Page Loaded: ", type);
-    type === "individual" ? SetPage() : SetPageBusiness();
+    // type === "individual" ? SetPage() : SetPageBusiness();
+    setStage(2);
+    setLoading(false);
+    dispatch(setGlobalLoading(false));
   }, []);
 
   //BAAS
@@ -1846,831 +1849,831 @@ export const Dashboard = () => {
     );
   }
 
-  if (type === "individual" && !userDetails) {
-    return (
-      <div className="d-flex flex-column justify-content-center align-items-center gap-4">
-        <Card className="w-100 px-4 py-2" style={{ borderRadius: 15 }}>
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="d-flex justify-content-start align-items-center gap-3">
-              <img
-                src="/kyc.png"
-                alt=""
-                style={{ width: 100, height: 100, objectFit: "cover" }}
-              />
-
-              <div>
-                <h3 className="text-dark fw-600">Register your account</h3>
-                <p className="text-center fs-7">
-                  Your journey begins here. Register and explore all we have to
-                  offer!
-                </p>
-              </div>
-            </div>
-
-            <InfoOutlined className="fs-2 text-secondary" />
-          </div>
-        </Card>
-
-        <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
-          <h5 className="text-primary fw-600 text-start">
-            Personal Information
-          </h5>
-          <Divider className="my-3" />
-
-          <div className="onboarding-form">
-            <CustomInput
-              value={email}
-              leftIcon={<Email />}
-              right={""}
-              label={"Email Address"}
-              disabled={true}
-              max={100}
-              type={"email"}
-              regex={regex.email}
-            />
-
-            <CustomSelect
-              options={titleList}
-              id="title"
-              value={title}
-              onChange={setTitle}
-              className=""
-              style={{}}
-              label="Title"
-              required
-            />
-
-            <CustomInput
-              value={firstName}
-              onInput={setFirstName}
-              leftIcon={<AccountCircle />}
-              label={"First Name"}
-              max={25}
-              required
-              regex={regex.alpha}
-              type={"alpha"}
-            />
-            <CustomInput
-              value={middleName}
-              onInput={setMiddleName}
-              leftIcon={<AccountCircle />}
-              label={"Middle Name"}
-              max={25}
-              regex={regex.alpha}
-              type={"alpha"}
-            />
-
-            <CustomInput
-              value={lastName}
-              onInput={setLastName}
-              leftIcon={<AccountCircle />}
-              label={"Last Name"}
-              max={25}
-              required
-              regex={regex.alpha}
-              type={"alpha"}
-            />
-
-            <CustomSelect
-              options={genderList}
-              id="gender"
-              value={gender}
-              onChange={setGender}
-              className=""
-              style={{}}
-              label="Gender"
-              required
-            />
-
-            <CustomDatepicker
-              selectedDate={dateOfBirth}
-              onDateChange={setDateOfBirth}
-              label="Date of Birth"
-              required
-            />
-
-            <CustomSelect
-              options={mobileCountryCodeList}
-              id="mobileCountryCode"
-              value={mobileCountryCode}
-              onChange={setMobileCountryCode}
-              className=""
-              style={{}}
-              label="Mobile Country Code"
-              required
-            />
-
-            <CustomInput
-              value={mobile}
-              onInput={setMobile}
-              leftIcon={<Call />}
-              label={"Mobile Number"}
-              max={12}
-              type={"phoneNumber"}
-              required
-              regex={regex.phoneNumber}
-            />
-
-            <CustomSelect
-              options={nationalityList}
-              id="nationality"
-              value={nationality}
-              onChange={setNationality}
-              className=""
-              style={{}}
-              label="Nationality"
-              required
-            />
-          </div>
-        </Card>
-
-        <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
-          <h5 className="text-primary fw-600 text-start">Delivery Address</h5>
-          <Divider className="my-3" />
-          <div className="onboarding-form">
-            <CustomInput
-              value={deliveryAddress1}
-              onInput={setDeliveryAddress1}
-              leftIcon={<MyLocation />}
-              right={""}
-              label={"Delivery Address 1"}
-              required
-              regex={regex.addressLine}
-              type={"adressLine"}
-              max={35}
-            />
-
-            <CustomInput
-              value={deliveryAddress2}
-              onInput={setDeliveryAddress2}
-              leftIcon={<NearMe />}
-              label={"Delivery Address 2"}
-              max={35}
-              required
-              regex={regex.addressLine}
-              type={"adressLine"}
-            />
-            <CustomInput
-              value={deliveryCity}
-              onInput={setDeliveryCity}
-              leftIcon={<LocationCity />}
-              label={"Delivery City"}
-              max={20}
-              required
-              regex={regex.city}
-              type={"city"}
-            />
-
-            <CustomInput
-              value={deliveryState}
-              onInput={setDeliveryState}
-              leftIcon={<LocationCity />}
-              label={"Delivery State"}
-              max={20}
-              required
-              regex={regex.state}
-              type={"state"}
-            />
-
-            <CustomInput
-              value={deliveryZipCode}
-              onInput={setDeliveryZipCode}
-              leftIcon={<Explore />}
-              label={"Delivery Zipcode"}
-              max={8}
-              required
-              regex={regex.zipCode}
-              type={"zipCode"}
-            />
-
-            <CustomSelect
-              options={countryList}
-              id="deliveryCountry"
-              value={deliveryCountry}
-              onChange={setDeliveryCountry}
-              className=""
-              style={{}}
-              label="Delivery Country"
-              required
-            />
-          </div>
-        </Card>
-
-        <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
-          <div className="d-flex align-items-center justify-content-between">
-            <h5 className="text-primary fw-600 text-start">Billing Address</h5>
-
-            <div>
-              <label htmlFor="" className="fs-8 fw-600 text-secondary">
-                Is Billing Address same as Delivery Address?
-              </label>
-
-              <Switch
-                size="small"
-                className="me-3 ms-2"
-                onClick={onToggleSwitch}
-              />
-            </div>
-          </div>
-
-          <Divider className="my-3" />
-          <div className="onboarding-form">
-            <CustomInput
-              value={billingAddress1}
-              onInput={setBillingAddress1}
-              leftIcon={<MyLocation />}
-              right={""}
-              label={"Billing Address 1"}
-              required
-              regex={regex.addressLine}
-              type={"adressLine"}
-              max={35}
-            />
-
-            <CustomInput
-              value={billingAddress2}
-              onInput={setBillingAddress2}
-              leftIcon={<NearMe />}
-              label={"Billing Address 2"}
-              max={20}
-              required
-              regex={regex.addressLine}
-              type={"adressLine"}
-            />
-            <CustomInput
-              value={billingCity}
-              onInput={billingCity}
-              leftIcon={<LocationCity />}
-              label={"Billing City"}
-              max={20}
-              required
-              regex={regex.city}
-              type={"city"}
-            />
-
-            <CustomInput
-              value={billingState}
-              onInput={setBillingState}
-              leftIcon={<LocationCity />}
-              label={"Billing State"}
-              max={20}
-              required
-              regex={regex.state}
-              type={"state"}
-            />
-
-            <CustomInput
-              value={billingZipCode}
-              onInput={setBillingZipCode}
-              leftIcon={<Explore />}
-              label={"Billing Zipcode"}
-              max={8}
-              required
-              regex={regex.zipCode}
-              type={"zipCode"}
-            />
-
-            <CustomSelect
-              options={countryList}
-              id="billingCountry"
-              value={billingCountry}
-              onChange={setBillingCountry}
-              className=""
-              style={{}}
-              label="Billing Country"
-              required
-            />
-          </div>
-
-          <div className="text-center py-3">
-            <Checkbox
-              color="success"
-              checked={isChecked}
-              onChange={handleCheckboxChange}
-            />
-            <label htmlFor="" className="fs-7">
-              I agree to the{" "}
-              <a
-                className="fw-600"
-                onClick={() =>
-                  window.open(process.env.VITE_privacyPolicy, "_blank")
-                }
-              >
-                Terms & Conditions
-              </a>
-            </label>
-          </div>
-
-          <CustomButton
-            label={"Register Now"}
-            icon={<AppRegistration />}
-            style={{ width: 350, margin: "0 auto" }}
-            isLoading={isSubmitting}
-            onClick={createUser}
-          />
-        </Card>
-      </div>
-    );
-  }
-
-  if (type === "business" && !userDetails) {
-    return (
-      <div className="d-flex flex-column justify-content-center align-items-center gap-4">
-        <Card className="w-100 px-4 py-2" style={{ borderRadius: 15 }}>
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="d-flex justify-content-start align-items-center gap-3">
-              <img
-                src="/kyc.png"
-                alt=""
-                style={{ width: 100, height: 100, objectFit: "cover" }}
-              />
-
-              <div>
-                <h3 className="text-dark fw-600">Register your business</h3>
-                <p className="text-center fs-7">
-                  Your journey begins here. Register and explore all we have to
-                  offer!
-                </p>
-              </div>
-            </div>
-
-            <InfoOutlined className="fs-2 text-secondary" />
-          </div>
-        </Card>
-
-        <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
-          <h5 className="text-primary fw-600 text-start">
-            Business Information
-          </h5>
-          <Divider className="my-3" />
-
-          <div className="onboarding-form">
-            <CustomInput
-              value={email}
-              leftIcon={<Email />}
-              right={""}
-              label={"Email Address"}
-              disabled={true}
-              max={100}
-              type={"email"}
-              regex={regex.email}
-            />
-
-            <CustomInput
-              value={businessName}
-              onInput={setBusinessName}
-              leftIcon={<Business />}
-              label={"Business Name"}
-              max={25}
-              required
-              regex={regex.alphanumeric}
-              type={"alphanumeric"}
-            />
-            <CustomInput
-              value={preferredName}
-              onInput={setPreferredName}
-              leftIcon={<BusinessCenter />}
-              label={"Preferred Name"}
-              max={25}
-              regex={regex.alphanumeric}
-              type={"alphanumeric"}
-              required
-            />
-
-            <CustomPastDatepicker
-              selectedDate={foundationDate}
-              onDateChange={setFoundationDate}
-              label="Foundation Date"
-              required
-            />
-
-            <CustomSelect
-              options={mobileCountryCodeList}
-              id="mobileCountryCode"
-              value={mobileCountryCode}
-              onChange={setMobileCountryCode}
-              className=""
-              style={{}}
-              label="Mobile Country Code"
-              required
-            />
-
-            <CustomInput
-              value={mobile}
-              onInput={setMobile}
-              leftIcon={<Call />}
-              label={"Mobile Number"}
-              max={12}
-              type={"phoneNumber"}
-              required
-              regex={regex.phoneNumber}
-            />
-
-            <CustomSelect
-              options={sourceOfFundsOptions}
-              id="sourceOfFunds"
-              value={sourceOfFunds}
-              onChange={setSourceOfFunds}
-              className=""
-              style={{}}
-              label="Source Of Funds"
-            />
-
-            <CustomSelect
-              options={purposeOfAccountOpeningOptions}
-              id="purposeOfAccountOpening"
-              value={purposeOfAccountOpening}
-              onChange={setPurposeOfAccountOpening}
-              className=""
-              style={{}}
-              label="Purpose Of Account Opening"
-            />
-          </div>
-        </Card>
-
-        <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
-          <h5 className="text-primary fw-600 text-start">Tax Information</h5>
-          <Divider className="my-3" />
-
-          <div className="onboarding-form">
-            <CustomSelect
-              options={taxIdTypeOptions}
-              id="taxIdType"
-              value={taxIdType}
-              onChange={setTaxIdType}
-              className=""
-              style={{}}
-              label="Id Type"
-              required
-            />
-
-            <CustomInput
-              value={taxIdNumber}
-              onInput={setTaxIdNumber}
-              leftIcon={<PointOfSale />}
-              label={"Id Number"}
-              max={9}
-              required
-              regex={regex.alphanumeric}
-              type={"alphanumeric"}
-            />
-
-            <CustomSelect
-              options={nationalityList}
-              id="taxIdNationality"
-              value={taxIdNationality}
-              onChange={setTaxIdNationality}
-              className=""
-              style={{}}
-              label="Nationality"
-              required
-            />
-
-            <CustomPastDatepicker
-              selectedDate={taxIdDateIssued}
-              onDateChange={setTaxIdDateIssued}
-              label="Issue Date"
-              required
-            />
-
-            <CustomFutureDatepicker
-              selectedDate={taxIdDateExpiry}
-              onDateChange={setTaxIdDateExpiry}
-              label="Expiry Date"
-              required
-            />
-          </div>
-        </Card>
-
-        <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
-          <h5 className="text-primary fw-600 text-start">Foundation Address</h5>
-          <Divider className="my-3" />
-          <div className="onboarding-form">
-            <CustomInput
-              value={deliveryAddress1}
-              onInput={setDeliveryAddress1}
-              leftIcon={<MyLocation />}
-              right={""}
-              label={"Foundation Address 1"}
-              required
-              regex={regex.addressLine}
-              type={"adressLine"}
-              max={35}
-            />
-
-            <CustomInput
-              value={deliveryAddress2}
-              onInput={setDeliveryAddress2}
-              leftIcon={<NearMe />}
-              label={"Foundation Address 2"}
-              max={35}
-              required
-              regex={regex.addressLine}
-              type={"adressLine"}
-            />
-            <CustomInput
-              value={deliveryCity}
-              onInput={setDeliveryCity}
-              leftIcon={<LocationCity />}
-              label={"Foundation City"}
-              max={20}
-              required
-              regex={regex.city}
-              type={"city"}
-            />
-
-            <CustomInput
-              value={deliveryState}
-              onInput={setDeliveryState}
-              leftIcon={<LocationCity />}
-              label={"Foundation State"}
-              max={20}
-              required
-              regex={regex.state}
-              type={"state"}
-            />
-
-            <CustomInput
-              value={deliveryZipCode}
-              onInput={setDeliveryZipCode}
-              leftIcon={<Explore />}
-              label={"Foundation Zipcode"}
-              max={8}
-              required
-              regex={regex.zipCode}
-              type={"zipCode"}
-            />
-
-            <CustomSelect
-              options={countryList}
-              id="deliveryCountry"
-              value={deliveryCountry}
-              onChange={setDeliveryCountry}
-              className=""
-              style={{}}
-              label="Foundation Country"
-              required
-            />
-          </div>
-        </Card>
-
-        <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
-          <div className="d-flex align-items-end justify-content-between">
-            <h5 className="text-primary fw-600 text-start">
-              Operational Address
-            </h5>
-
-            <div>
-              <label htmlFor="" className="fs-8 fw-600 text-secondary">
-                Is Operational Address same as Foundation Address?
-              </label>
-
-              <Switch
-                size="small"
-                className="me-3 ms-2"
-                onClick={onToggleSwitch}
-              />
-            </div>
-          </div>
-
-          <Divider className="my-3" />
-          <div className="onboarding-form">
-            <CustomInput
-              value={billingAddress1}
-              onInput={setBillingAddress1}
-              leftIcon={<MyLocation />}
-              right={""}
-              label={"Operational Address 1"}
-              required
-              regex={regex.addressLine}
-              type={"adressLine"}
-              max={35}
-            />
-
-            <CustomInput
-              value={billingAddress2}
-              onInput={setBillingAddress2}
-              leftIcon={<NearMe />}
-              label={"Operational Address 2"}
-              max={20}
-              required
-              regex={regex.addressLine}
-              type={"adressLine"}
-            />
-            <CustomInput
-              value={billingCity}
-              onInput={billingCity}
-              leftIcon={<LocationCity />}
-              label={"Operational City"}
-              max={20}
-              required
-              regex={regex.city}
-              type={"city"}
-            />
-
-            <CustomInput
-              value={billingState}
-              onInput={setBillingState}
-              leftIcon={<LocationCity />}
-              label={"Operational State"}
-              max={20}
-              required
-              regex={regex.state}
-              type={"state"}
-            />
-
-            <CustomInput
-              value={billingZipCode}
-              onInput={setBillingZipCode}
-              leftIcon={<Explore />}
-              label={"Operational Zipcode"}
-              max={8}
-              required
-              regex={regex.zipCode}
-              type={"zipCode"}
-            />
-
-            <CustomSelect
-              options={countryList}
-              id="billingCountry"
-              value={billingCountry}
-              onChange={setBillingCountry}
-              className=""
-              style={{}}
-              label="Operational Country"
-              required
-            />
-          </div>
-
-          <div className="text-center py-3">
-            <Checkbox
-              color="success"
-              checked={isChecked}
-              onChange={handleCheckboxChange}
-            />
-            <label htmlFor="" className="fs-7">
-              I agree to the{" "}
-              <a
-                className="fw-600"
-                onClick={() =>
-                  window.open(process.env.VITE_privacyPolicy, "_blank")
-                }
-              >
-                Terms & Conditions
-              </a>
-            </label>
-          </div>
-
-          <CustomButton
-            label={"Register Now"}
-            icon={<AppRegistration />}
-            style={{ width: 350, margin: "0 auto" }}
-            isLoading={isSubmitting}
-            onClick={createBusiness}
-          />
-        </Card>
-      </div>
-    );
-  }
-
-  if (
-    program === "SMMACS0" &&
-    ((type === "individual" &&
-      kybDetails?.kycStatus?.toLowerCase() !== "completed") ||
-      (type === "business" &&
-        kybDetails?.kybStatus?.toLowerCase() !== "completed"))
-  ) {
-    return (
-      <>
-        {type === "individual" &&
-        kybDetails.kycStatus.toLowerCase() !== "completed" ? (
-          <>
-            <div
-              className="d-flex flex-column justify-content-center align-items-center gap-4"
-              style={{ height: "80vh", padding: "0 20rem" }}
-            >
-              <img
-                src="/verification.png"
-                alt=""
-                style={{ width: 300, height: 300, objectFit: "cover" }}
-              />
-
-              <label
-                htmlFor=""
-                className="fs-7 text-secondary px-2 text-center"
-              >
-                {kybDetails?.kycStatus.toLowerCase() === "pending"
-                  ? `Your KYC verification hasn't been started yet. Complete the process now to add your virtual account.`
-                  : `We've received your KYC documents and is currently under review. We'll notify you once verification is complete.`}
-              </label>
-              {kybDetails?.kycStatus.toLowerCase() === "pending" ? (
-                <CustomButton
-                  label={`Complete ${type === "business" ? "KYB" : "KYC"}`}
-                  icon={<WorkHistory />}
-                  onClick={() => {
-                    dispatch(setActiveTab("Settings"));
-                    navigate(
-                      `/settings/${type === "business" ? "kyb" : "kyc"}`
-                    );
-                  }}
-                  isLoading={isLoading}
-                  divClass="w-60"
-                />
-              ) : (
-                <CustomButton
-                  label={`Check ${type === "business" ? "KYB" : "KYC"} Details`}
-                  icon={<WorkHistory />}
-                  onClick={() => {
-                    dispatch(setActiveTab("Settings"));
-                    navigate(
-                      `/settings/${type === "business" ? "kyb" : "kyc"}`
-                    );
-                  }}
-                  isLoading={isLoading}
-                  divClass="w-60"
-                />
-              )}
-            </div>
-          </>
-        ) : type === "business" && kybDetails.kybStatus !== "completed" ? (
-          <>
-            <div
-              className="d-flex flex-column justify-content-center align-items-center gap-4"
-              style={{ height: "80vh", padding: "0 20rem" }}
-            >
-              <img
-                src="/verification.png"
-                alt=""
-                style={{ width: 300, height: 300, objectFit: "cover" }}
-              />
-
-              <label
-                htmlFor=""
-                className="fs-7 text-secondary px-2 text-center"
-              >
-                {kybDetails?.kybStatus === "not_submitted"
-                  ? `Your business verification (${
-                      type === "business" ? "KYB" : "KYC"
-                    }) hasn't been submitted yet. Complete the process now to activate your account.`
-                  : `Your ${
-                      type === "business" ? "KYB" : "KYC"
-                    } documents have been submitted and are currently under review. We'll notify you once verification is complete.`}
-              </label>
-              {kybDetails?.kybStatus === "not_submitted" ? (
-                <CustomButton
-                  label={`Complete ${type === "business" ? "KYB" : "KYC"}`}
-                  icon={<WorkHistory />}
-                  onClick={() => {
-                    dispatch(setActiveTab("Settings"));
-                    navigate(
-                      `/settings/${type === "business" ? "kyb" : "kyc"}`
-                    );
-                  }}
-                  isLoading={isLoading}
-                  divClass="w-60"
-                />
-              ) : (
-                <CustomButton
-                  label={`Check ${type === "business" ? "KYB" : "KYC"} Details`}
-                  icon={<WorkHistory />}
-                  onClick={() => {
-                    dispatch(setActiveTab("Settings"));
-                    navigate(
-                      `/settings/${type === "business" ? "kyb" : "kyc"}`
-                    );
-                  }}
-                  isLoading={isLoading}
-                  divClass="w-60"
-                />
-              )}
-            </div>
-          </>
-        ) : (
-          <></>
-        )}
-      </>
-    );
-  }
-
-  if (account.length === 0) {
-    return (
-      <div className="d-flex flex-column justify-content-center align-items-center gap-4 vh-80">
-        <img src="/banks/bank-icon.svg" alt="" style={{ width: "10%" }} />
-
-        <label className="text-secondary">
-          It looks like you haven't added your account yet.
-        </label>
-
-        <CustomButton
-          label={"Add Account"}
-          icon={<AccountBalanceWallet />}
-          style={{ width: 350, margin: "0 auto" }}
-          isLoading={isLoading}
-          onClick={() => addAccount({ dispatch, setLoading, SetPage })}
-        />
-      </div>
-    );
-  }
+  // if (type === "individual" && !userDetails) {
+  //   return (
+  //     <div className="d-flex flex-column justify-content-center align-items-center gap-4">
+  //       <Card className="w-100 px-4 py-2" style={{ borderRadius: 15 }}>
+  //         <div className="d-flex justify-content-between align-items-center">
+  //           <div className="d-flex justify-content-start align-items-center gap-3">
+  //             <img
+  //               src="/kyc.png"
+  //               alt=""
+  //               style={{ width: 100, height: 100, objectFit: "cover" }}
+  //             />
+
+  //             <div>
+  //               <h3 className="text-dark fw-600">Register your account</h3>
+  //               <p className="text-center fs-7">
+  //                 Your journey begins here. Register and explore all we have to
+  //                 offer!
+  //               </p>
+  //             </div>
+  //           </div>
+
+  //           <InfoOutlined className="fs-2 text-secondary" />
+  //         </div>
+  //       </Card>
+
+  //       <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
+  //         <h5 className="text-primary fw-600 text-start">
+  //           Personal Information
+  //         </h5>
+  //         <Divider className="my-3" />
+
+  //         <div className="onboarding-form">
+  //           <CustomInput
+  //             value={email}
+  //             leftIcon={<Email />}
+  //             right={""}
+  //             label={"Email Address"}
+  //             disabled={true}
+  //             max={100}
+  //             type={"email"}
+  //             regex={regex.email}
+  //           />
+
+  //           <CustomSelect
+  //             options={titleList}
+  //             id="title"
+  //             value={title}
+  //             onChange={setTitle}
+  //             className=""
+  //             style={{}}
+  //             label="Title"
+  //             required
+  //           />
+
+  //           <CustomInput
+  //             value={firstName}
+  //             onInput={setFirstName}
+  //             leftIcon={<AccountCircle />}
+  //             label={"First Name"}
+  //             max={25}
+  //             required
+  //             regex={regex.alpha}
+  //             type={"alpha"}
+  //           />
+  //           <CustomInput
+  //             value={middleName}
+  //             onInput={setMiddleName}
+  //             leftIcon={<AccountCircle />}
+  //             label={"Middle Name"}
+  //             max={25}
+  //             regex={regex.alpha}
+  //             type={"alpha"}
+  //           />
+
+  //           <CustomInput
+  //             value={lastName}
+  //             onInput={setLastName}
+  //             leftIcon={<AccountCircle />}
+  //             label={"Last Name"}
+  //             max={25}
+  //             required
+  //             regex={regex.alpha}
+  //             type={"alpha"}
+  //           />
+
+  //           <CustomSelect
+  //             options={genderList}
+  //             id="gender"
+  //             value={gender}
+  //             onChange={setGender}
+  //             className=""
+  //             style={{}}
+  //             label="Gender"
+  //             required
+  //           />
+
+  //           <CustomDatepicker
+  //             selectedDate={dateOfBirth}
+  //             onDateChange={setDateOfBirth}
+  //             label="Date of Birth"
+  //             required
+  //           />
+
+  //           <CustomSelect
+  //             options={mobileCountryCodeList}
+  //             id="mobileCountryCode"
+  //             value={mobileCountryCode}
+  //             onChange={setMobileCountryCode}
+  //             className=""
+  //             style={{}}
+  //             label="Mobile Country Code"
+  //             required
+  //           />
+
+  //           <CustomInput
+  //             value={mobile}
+  //             onInput={setMobile}
+  //             leftIcon={<Call />}
+  //             label={"Mobile Number"}
+  //             max={12}
+  //             type={"phoneNumber"}
+  //             required
+  //             regex={regex.phoneNumber}
+  //           />
+
+  //           <CustomSelect
+  //             options={nationalityList}
+  //             id="nationality"
+  //             value={nationality}
+  //             onChange={setNationality}
+  //             className=""
+  //             style={{}}
+  //             label="Nationality"
+  //             required
+  //           />
+  //         </div>
+  //       </Card>
+
+  //       <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
+  //         <h5 className="text-primary fw-600 text-start">Delivery Address</h5>
+  //         <Divider className="my-3" />
+  //         <div className="onboarding-form">
+  //           <CustomInput
+  //             value={deliveryAddress1}
+  //             onInput={setDeliveryAddress1}
+  //             leftIcon={<MyLocation />}
+  //             right={""}
+  //             label={"Delivery Address 1"}
+  //             required
+  //             regex={regex.addressLine}
+  //             type={"adressLine"}
+  //             max={35}
+  //           />
+
+  //           <CustomInput
+  //             value={deliveryAddress2}
+  //             onInput={setDeliveryAddress2}
+  //             leftIcon={<NearMe />}
+  //             label={"Delivery Address 2"}
+  //             max={35}
+  //             required
+  //             regex={regex.addressLine}
+  //             type={"adressLine"}
+  //           />
+  //           <CustomInput
+  //             value={deliveryCity}
+  //             onInput={setDeliveryCity}
+  //             leftIcon={<LocationCity />}
+  //             label={"Delivery City"}
+  //             max={20}
+  //             required
+  //             regex={regex.city}
+  //             type={"city"}
+  //           />
+
+  //           <CustomInput
+  //             value={deliveryState}
+  //             onInput={setDeliveryState}
+  //             leftIcon={<LocationCity />}
+  //             label={"Delivery State"}
+  //             max={20}
+  //             required
+  //             regex={regex.state}
+  //             type={"state"}
+  //           />
+
+  //           <CustomInput
+  //             value={deliveryZipCode}
+  //             onInput={setDeliveryZipCode}
+  //             leftIcon={<Explore />}
+  //             label={"Delivery Zipcode"}
+  //             max={8}
+  //             required
+  //             regex={regex.zipCode}
+  //             type={"zipCode"}
+  //           />
+
+  //           <CustomSelect
+  //             options={countryList}
+  //             id="deliveryCountry"
+  //             value={deliveryCountry}
+  //             onChange={setDeliveryCountry}
+  //             className=""
+  //             style={{}}
+  //             label="Delivery Country"
+  //             required
+  //           />
+  //         </div>
+  //       </Card>
+
+  //       <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
+  //         <div className="d-flex align-items-center justify-content-between">
+  //           <h5 className="text-primary fw-600 text-start">Billing Address</h5>
+
+  //           <div>
+  //             <label htmlFor="" className="fs-8 fw-600 text-secondary">
+  //               Is Billing Address same as Delivery Address?
+  //             </label>
+
+  //             <Switch
+  //               size="small"
+  //               className="me-3 ms-2"
+  //               onClick={onToggleSwitch}
+  //             />
+  //           </div>
+  //         </div>
+
+  //         <Divider className="my-3" />
+  //         <div className="onboarding-form">
+  //           <CustomInput
+  //             value={billingAddress1}
+  //             onInput={setBillingAddress1}
+  //             leftIcon={<MyLocation />}
+  //             right={""}
+  //             label={"Billing Address 1"}
+  //             required
+  //             regex={regex.addressLine}
+  //             type={"adressLine"}
+  //             max={35}
+  //           />
+
+  //           <CustomInput
+  //             value={billingAddress2}
+  //             onInput={setBillingAddress2}
+  //             leftIcon={<NearMe />}
+  //             label={"Billing Address 2"}
+  //             max={20}
+  //             required
+  //             regex={regex.addressLine}
+  //             type={"adressLine"}
+  //           />
+  //           <CustomInput
+  //             value={billingCity}
+  //             onInput={billingCity}
+  //             leftIcon={<LocationCity />}
+  //             label={"Billing City"}
+  //             max={20}
+  //             required
+  //             regex={regex.city}
+  //             type={"city"}
+  //           />
+
+  //           <CustomInput
+  //             value={billingState}
+  //             onInput={setBillingState}
+  //             leftIcon={<LocationCity />}
+  //             label={"Billing State"}
+  //             max={20}
+  //             required
+  //             regex={regex.state}
+  //             type={"state"}
+  //           />
+
+  //           <CustomInput
+  //             value={billingZipCode}
+  //             onInput={setBillingZipCode}
+  //             leftIcon={<Explore />}
+  //             label={"Billing Zipcode"}
+  //             max={8}
+  //             required
+  //             regex={regex.zipCode}
+  //             type={"zipCode"}
+  //           />
+
+  //           <CustomSelect
+  //             options={countryList}
+  //             id="billingCountry"
+  //             value={billingCountry}
+  //             onChange={setBillingCountry}
+  //             className=""
+  //             style={{}}
+  //             label="Billing Country"
+  //             required
+  //           />
+  //         </div>
+
+  //         <div className="text-center py-3">
+  //           <Checkbox
+  //             color="success"
+  //             checked={isChecked}
+  //             onChange={handleCheckboxChange}
+  //           />
+  //           <label htmlFor="" className="fs-7">
+  //             I agree to the{" "}
+  //             <a
+  //               className="fw-600"
+  //               onClick={() =>
+  //                 window.open(process.env.VITE_privacyPolicy, "_blank")
+  //               }
+  //             >
+  //               Terms & Conditions
+  //             </a>
+  //           </label>
+  //         </div>
+
+  //         <CustomButton
+  //           label={"Register Now"}
+  //           icon={<AppRegistration />}
+  //           style={{ width: 350, margin: "0 auto" }}
+  //           isLoading={isSubmitting}
+  //           onClick={createUser}
+  //         />
+  //       </Card>
+  //     </div>
+  //   );
+  // }
+
+  // if (type === "business" && !userDetails) {
+  //   return (
+  //     <div className="d-flex flex-column justify-content-center align-items-center gap-4">
+  //       <Card className="w-100 px-4 py-2" style={{ borderRadius: 15 }}>
+  //         <div className="d-flex justify-content-between align-items-center">
+  //           <div className="d-flex justify-content-start align-items-center gap-3">
+  //             <img
+  //               src="/kyc.png"
+  //               alt=""
+  //               style={{ width: 100, height: 100, objectFit: "cover" }}
+  //             />
+
+  //             <div>
+  //               <h3 className="text-dark fw-600">Register your business</h3>
+  //               <p className="text-center fs-7">
+  //                 Your journey begins here. Register and explore all we have to
+  //                 offer!
+  //               </p>
+  //             </div>
+  //           </div>
+
+  //           <InfoOutlined className="fs-2 text-secondary" />
+  //         </div>
+  //       </Card>
+
+  //       <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
+  //         <h5 className="text-primary fw-600 text-start">
+  //           Business Information
+  //         </h5>
+  //         <Divider className="my-3" />
+
+  //         <div className="onboarding-form">
+  //           <CustomInput
+  //             value={email}
+  //             leftIcon={<Email />}
+  //             right={""}
+  //             label={"Email Address"}
+  //             disabled={true}
+  //             max={100}
+  //             type={"email"}
+  //             regex={regex.email}
+  //           />
+
+  //           <CustomInput
+  //             value={businessName}
+  //             onInput={setBusinessName}
+  //             leftIcon={<Business />}
+  //             label={"Business Name"}
+  //             max={25}
+  //             required
+  //             regex={regex.alphanumeric}
+  //             type={"alphanumeric"}
+  //           />
+  //           <CustomInput
+  //             value={preferredName}
+  //             onInput={setPreferredName}
+  //             leftIcon={<BusinessCenter />}
+  //             label={"Preferred Name"}
+  //             max={25}
+  //             regex={regex.alphanumeric}
+  //             type={"alphanumeric"}
+  //             required
+  //           />
+
+  //           <CustomPastDatepicker
+  //             selectedDate={foundationDate}
+  //             onDateChange={setFoundationDate}
+  //             label="Foundation Date"
+  //             required
+  //           />
+
+  //           <CustomSelect
+  //             options={mobileCountryCodeList}
+  //             id="mobileCountryCode"
+  //             value={mobileCountryCode}
+  //             onChange={setMobileCountryCode}
+  //             className=""
+  //             style={{}}
+  //             label="Mobile Country Code"
+  //             required
+  //           />
+
+  //           <CustomInput
+  //             value={mobile}
+  //             onInput={setMobile}
+  //             leftIcon={<Call />}
+  //             label={"Mobile Number"}
+  //             max={12}
+  //             type={"phoneNumber"}
+  //             required
+  //             regex={regex.phoneNumber}
+  //           />
+
+  //           <CustomSelect
+  //             options={sourceOfFundsOptions}
+  //             id="sourceOfFunds"
+  //             value={sourceOfFunds}
+  //             onChange={setSourceOfFunds}
+  //             className=""
+  //             style={{}}
+  //             label="Source Of Funds"
+  //           />
+
+  //           <CustomSelect
+  //             options={purposeOfAccountOpeningOptions}
+  //             id="purposeOfAccountOpening"
+  //             value={purposeOfAccountOpening}
+  //             onChange={setPurposeOfAccountOpening}
+  //             className=""
+  //             style={{}}
+  //             label="Purpose Of Account Opening"
+  //           />
+  //         </div>
+  //       </Card>
+
+  //       <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
+  //         <h5 className="text-primary fw-600 text-start">Tax Information</h5>
+  //         <Divider className="my-3" />
+
+  //         <div className="onboarding-form">
+  //           <CustomSelect
+  //             options={taxIdTypeOptions}
+  //             id="taxIdType"
+  //             value={taxIdType}
+  //             onChange={setTaxIdType}
+  //             className=""
+  //             style={{}}
+  //             label="Id Type"
+  //             required
+  //           />
+
+  //           <CustomInput
+  //             value={taxIdNumber}
+  //             onInput={setTaxIdNumber}
+  //             leftIcon={<PointOfSale />}
+  //             label={"Id Number"}
+  //             max={9}
+  //             required
+  //             regex={regex.alphanumeric}
+  //             type={"alphanumeric"}
+  //           />
+
+  //           <CustomSelect
+  //             options={nationalityList}
+  //             id="taxIdNationality"
+  //             value={taxIdNationality}
+  //             onChange={setTaxIdNationality}
+  //             className=""
+  //             style={{}}
+  //             label="Nationality"
+  //             required
+  //           />
+
+  //           <CustomPastDatepicker
+  //             selectedDate={taxIdDateIssued}
+  //             onDateChange={setTaxIdDateIssued}
+  //             label="Issue Date"
+  //             required
+  //           />
+
+  //           <CustomFutureDatepicker
+  //             selectedDate={taxIdDateExpiry}
+  //             onDateChange={setTaxIdDateExpiry}
+  //             label="Expiry Date"
+  //             required
+  //           />
+  //         </div>
+  //       </Card>
+
+  //       <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
+  //         <h5 className="text-primary fw-600 text-start">Foundation Address</h5>
+  //         <Divider className="my-3" />
+  //         <div className="onboarding-form">
+  //           <CustomInput
+  //             value={deliveryAddress1}
+  //             onInput={setDeliveryAddress1}
+  //             leftIcon={<MyLocation />}
+  //             right={""}
+  //             label={"Foundation Address 1"}
+  //             required
+  //             regex={regex.addressLine}
+  //             type={"adressLine"}
+  //             max={35}
+  //           />
+
+  //           <CustomInput
+  //             value={deliveryAddress2}
+  //             onInput={setDeliveryAddress2}
+  //             leftIcon={<NearMe />}
+  //             label={"Foundation Address 2"}
+  //             max={35}
+  //             required
+  //             regex={regex.addressLine}
+  //             type={"adressLine"}
+  //           />
+  //           <CustomInput
+  //             value={deliveryCity}
+  //             onInput={setDeliveryCity}
+  //             leftIcon={<LocationCity />}
+  //             label={"Foundation City"}
+  //             max={20}
+  //             required
+  //             regex={regex.city}
+  //             type={"city"}
+  //           />
+
+  //           <CustomInput
+  //             value={deliveryState}
+  //             onInput={setDeliveryState}
+  //             leftIcon={<LocationCity />}
+  //             label={"Foundation State"}
+  //             max={20}
+  //             required
+  //             regex={regex.state}
+  //             type={"state"}
+  //           />
+
+  //           <CustomInput
+  //             value={deliveryZipCode}
+  //             onInput={setDeliveryZipCode}
+  //             leftIcon={<Explore />}
+  //             label={"Foundation Zipcode"}
+  //             max={8}
+  //             required
+  //             regex={regex.zipCode}
+  //             type={"zipCode"}
+  //           />
+
+  //           <CustomSelect
+  //             options={countryList}
+  //             id="deliveryCountry"
+  //             value={deliveryCountry}
+  //             onChange={setDeliveryCountry}
+  //             className=""
+  //             style={{}}
+  //             label="Foundation Country"
+  //             required
+  //           />
+  //         </div>
+  //       </Card>
+
+  //       <Card className="p-4 w-100" style={{ borderRadius: 15 }}>
+  //         <div className="d-flex align-items-end justify-content-between">
+  //           <h5 className="text-primary fw-600 text-start">
+  //             Operational Address
+  //           </h5>
+
+  //           <div>
+  //             <label htmlFor="" className="fs-8 fw-600 text-secondary">
+  //               Is Operational Address same as Foundation Address?
+  //             </label>
+
+  //             <Switch
+  //               size="small"
+  //               className="me-3 ms-2"
+  //               onClick={onToggleSwitch}
+  //             />
+  //           </div>
+  //         </div>
+
+  //         <Divider className="my-3" />
+  //         <div className="onboarding-form">
+  //           <CustomInput
+  //             value={billingAddress1}
+  //             onInput={setBillingAddress1}
+  //             leftIcon={<MyLocation />}
+  //             right={""}
+  //             label={"Operational Address 1"}
+  //             required
+  //             regex={regex.addressLine}
+  //             type={"adressLine"}
+  //             max={35}
+  //           />
+
+  //           <CustomInput
+  //             value={billingAddress2}
+  //             onInput={setBillingAddress2}
+  //             leftIcon={<NearMe />}
+  //             label={"Operational Address 2"}
+  //             max={20}
+  //             required
+  //             regex={regex.addressLine}
+  //             type={"adressLine"}
+  //           />
+  //           <CustomInput
+  //             value={billingCity}
+  //             onInput={billingCity}
+  //             leftIcon={<LocationCity />}
+  //             label={"Operational City"}
+  //             max={20}
+  //             required
+  //             regex={regex.city}
+  //             type={"city"}
+  //           />
+
+  //           <CustomInput
+  //             value={billingState}
+  //             onInput={setBillingState}
+  //             leftIcon={<LocationCity />}
+  //             label={"Operational State"}
+  //             max={20}
+  //             required
+  //             regex={regex.state}
+  //             type={"state"}
+  //           />
+
+  //           <CustomInput
+  //             value={billingZipCode}
+  //             onInput={setBillingZipCode}
+  //             leftIcon={<Explore />}
+  //             label={"Operational Zipcode"}
+  //             max={8}
+  //             required
+  //             regex={regex.zipCode}
+  //             type={"zipCode"}
+  //           />
+
+  //           <CustomSelect
+  //             options={countryList}
+  //             id="billingCountry"
+  //             value={billingCountry}
+  //             onChange={setBillingCountry}
+  //             className=""
+  //             style={{}}
+  //             label="Operational Country"
+  //             required
+  //           />
+  //         </div>
+
+  //         <div className="text-center py-3">
+  //           <Checkbox
+  //             color="success"
+  //             checked={isChecked}
+  //             onChange={handleCheckboxChange}
+  //           />
+  //           <label htmlFor="" className="fs-7">
+  //             I agree to the{" "}
+  //             <a
+  //               className="fw-600"
+  //               onClick={() =>
+  //                 window.open(process.env.VITE_privacyPolicy, "_blank")
+  //               }
+  //             >
+  //               Terms & Conditions
+  //             </a>
+  //           </label>
+  //         </div>
+
+  //         <CustomButton
+  //           label={"Register Now"}
+  //           icon={<AppRegistration />}
+  //           style={{ width: 350, margin: "0 auto" }}
+  //           isLoading={isSubmitting}
+  //           onClick={createBusiness}
+  //         />
+  //       </Card>
+  //     </div>
+  //   );
+  // }
+
+  // if (
+  //   program === "SMMACS0" &&
+  //   ((type === "individual" &&
+  //     kybDetails?.kycStatus?.toLowerCase() !== "completed") ||
+  //     (type === "business" &&
+  //       kybDetails?.kybStatus?.toLowerCase() !== "completed"))
+  // ) {
+  //   return (
+  //     <>
+  //       {type === "individual" &&
+  //       kybDetails.kycStatus.toLowerCase() !== "completed" ? (
+  //         <>
+  //           <div
+  //             className="d-flex flex-column justify-content-center align-items-center gap-4"
+  //             style={{ height: "80vh", padding: "0 20rem" }}
+  //           >
+  //             <img
+  //               src="/verification.png"
+  //               alt=""
+  //               style={{ width: 300, height: 300, objectFit: "cover" }}
+  //             />
+
+  //             <label
+  //               htmlFor=""
+  //               className="fs-7 text-secondary px-2 text-center"
+  //             >
+  //               {kybDetails?.kycStatus.toLowerCase() === "pending"
+  //                 ? `Your KYC verification hasn't been started yet. Complete the process now to add your virtual account.`
+  //                 : `We've received your KYC documents and is currently under review. We'll notify you once verification is complete.`}
+  //             </label>
+  //             {kybDetails?.kycStatus.toLowerCase() === "pending" ? (
+  //               <CustomButton
+  //                 label={`Complete ${type === "business" ? "KYB" : "KYC"}`}
+  //                 icon={<WorkHistory />}
+  //                 onClick={() => {
+  //                   dispatch(setActiveTab("Settings"));
+  //                   navigate(
+  //                     `/settings/${type === "business" ? "kyb" : "kyc"}`
+  //                   );
+  //                 }}
+  //                 isLoading={isLoading}
+  //                 divClass="w-60"
+  //               />
+  //             ) : (
+  //               <CustomButton
+  //                 label={`Check ${type === "business" ? "KYB" : "KYC"} Details`}
+  //                 icon={<WorkHistory />}
+  //                 onClick={() => {
+  //                   dispatch(setActiveTab("Settings"));
+  //                   navigate(
+  //                     `/settings/${type === "business" ? "kyb" : "kyc"}`
+  //                   );
+  //                 }}
+  //                 isLoading={isLoading}
+  //                 divClass="w-60"
+  //               />
+  //             )}
+  //           </div>
+  //         </>
+  //       ) : type === "business" && kybDetails.kybStatus !== "completed" ? (
+  //         <>
+  //           <div
+  //             className="d-flex flex-column justify-content-center align-items-center gap-4"
+  //             style={{ height: "80vh", padding: "0 20rem" }}
+  //           >
+  //             <img
+  //               src="/verification.png"
+  //               alt=""
+  //               style={{ width: 300, height: 300, objectFit: "cover" }}
+  //             />
+
+  //             <label
+  //               htmlFor=""
+  //               className="fs-7 text-secondary px-2 text-center"
+  //             >
+  //               {kybDetails?.kybStatus === "not_submitted"
+  //                 ? `Your business verification (${
+  //                     type === "business" ? "KYB" : "KYC"
+  //                   }) hasn't been submitted yet. Complete the process now to activate your account.`
+  //                 : `Your ${
+  //                     type === "business" ? "KYB" : "KYC"
+  //                   } documents have been submitted and are currently under review. We'll notify you once verification is complete.`}
+  //             </label>
+  //             {kybDetails?.kybStatus === "not_submitted" ? (
+  //               <CustomButton
+  //                 label={`Complete ${type === "business" ? "KYB" : "KYC"}`}
+  //                 icon={<WorkHistory />}
+  //                 onClick={() => {
+  //                   dispatch(setActiveTab("Settings"));
+  //                   navigate(
+  //                     `/settings/${type === "business" ? "kyb" : "kyc"}`
+  //                   );
+  //                 }}
+  //                 isLoading={isLoading}
+  //                 divClass="w-60"
+  //               />
+  //             ) : (
+  //               <CustomButton
+  //                 label={`Check ${type === "business" ? "KYB" : "KYC"} Details`}
+  //                 icon={<WorkHistory />}
+  //                 onClick={() => {
+  //                   dispatch(setActiveTab("Settings"));
+  //                   navigate(
+  //                     `/settings/${type === "business" ? "kyb" : "kyc"}`
+  //                   );
+  //                 }}
+  //                 isLoading={isLoading}
+  //                 divClass="w-60"
+  //               />
+  //             )}
+  //           </div>
+  //         </>
+  //       ) : (
+  //         <></>
+  //       )}
+  //     </>
+  //   );
+  // }
+
+  // if (account.length === 0) {
+  //   return (
+  //     <div className="d-flex flex-column justify-content-center align-items-center gap-4 vh-80">
+  //       <img src="/banks/bank-icon.svg" alt="" style={{ width: "10%" }} />
+
+  //       <label className="text-secondary">
+  //         It looks like you haven't added your account yet.
+  //       </label>
+
+  //       <CustomButton
+  //         label={"Add Account"}
+  //         icon={<AccountBalanceWallet />}
+  //         style={{ width: 350, margin: "0 auto" }}
+  //         isLoading={isLoading}
+  //         onClick={() => addAccount({ dispatch, setLoading, SetPage })}
+  //       />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="p-2 flex-column d-flex gap-3">

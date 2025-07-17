@@ -815,7 +815,7 @@ export const getDates = (days = 30) => {
     endDate: endDate.toISOString().split("T")[0], // Format: YYYY-MM-DD
   };
 };
-
+//laxman
 export const detectCardType = (cardNumber) => {
   const cardPatterns = [
     {
@@ -869,62 +869,100 @@ export const CreditCardView = ({
   const [isLoading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
 
+  // Extract data directly from the item prop based on the new structure
+  const {
+    cardStatus,
+    maskedCardNumber,
+    nameOnCard,
+    cardType: apiCardType, // Renaming to avoid conflict with state variable
+    currency,
+    createdAt,
+  } = item;
+
   const cardLogos = {
     Mastercard: (
       <img
         src="/banks/mastercard-logo.png"
-        alt="Others"
+        alt="Mastercard"
         style={{ width: 60 }}
       />
     ),
-    Others: (
-      <img src="/banks/matchmove.png" alt="Others" style={{ width: 80 }} />
+    Visa: <img src="/banks/visa-logo.png" alt="Visa" style={{ width: 60 }} />,
+    Other: (
+      <img src="/banks/matchmove.png" alt="Other Card" style={{ width: 80 }} />
     ),
   };
 
   const cardCovers = ["/cover/card-cover-1.png"];
-
   const randomImage = cardCovers[Math.floor(Math.random() * cardCovers.length)];
 
-  const formatCardNumber = (cardNumber) => {
-    return cardNumber.replace(/(\d{4})(?=\d)/g, "$1  ");
+  const formatCardNumberDisplay = (number) => {
+    if (!number) return "XXXX XXXX XXXX XXXX";
+    const lastFour = number.slice(-4);
+    return `**** **** **** ${lastFour}`;
   };
 
   const userDetails = useSelector((state) => state.auth.userDetails);
 
+  useEffect(() => {
+    if (nameOnCard) {
+      setHolderName(nameOnCard);
+    } else if (userDetails) {
+      setHolderName(
+        `${userDetails?.firstName} ${userDetails?.middleName || ""} ${
+          userDetails?.lastName
+        }`
+      );
+    }
+
+    // Set card type and masked number for display
+    setCardType(apiCardType === "GPR_PHY" ? "Physical" : "Virtual"); // Determine 'Physical' or 'Virtual' from cardType
+    setCardNumber(maskedCardNumber);
+
+    // You'll need to fetch the actual expiry date from the decrypted data when 'show' is true.
+    // For initial display, we'll leave it as default or infer if possible.
+    // For now, we'll keep the placeholder "MM/YY"
+    setExpiryDate("MM/YY");
+  }, [item, userDetails, nameOnCard, maskedCardNumber, apiCardType, currency]);
+
   const showCard = async () => {
-    if (item?.cardStatus === "active") {
+    if (cardStatus?.toLowerCase() === "active") {
       try {
         setLoading(true);
 
-        const cardsData = await dispatch(getCardsDetailsAPI(item.cardid));
+        const cardsData = await dispatch(getCardsDetailsAPI(item.cardHashId));
 
-        if (cardsData.status === "SUCCESS") {
-          let encData = decryptData(cardsData.encryptData);
-          const cardDetails = JSON.parse(encData);
+        if (cardsData.status === "success") {
+          let decryptedCardDetails = decryptData(cardsData.data[0]);
+          const cardDetails = JSON.parse(decryptedCardDetails);
+
           if (cardDetails) {
-            setCardNumber(formatCardNumber(cardDetails.number));
+            setCardNumber(formatCardNumber(cardDetails.card_number));
             setCVV(cardDetails.cvv);
-            setExpiryDate(`${cardDetails.month}/${cardDetails.year.slice(2)}`);
-            setHolderName(
-              `${userDetails?.firstName} ${userDetails?.middleName || ""} ${
-                userDetails?.lastName
-              }`
+            setExpiryDate(
+              `${cardDetails.month}/${String(cardDetails.year).slice(2)}`
             );
-            setCardType(detectCardType(cardDetails.number));
+            setHolderName(
+              nameOnCard ||
+                `${userDetails?.firstName} ${userDetails?.middleName || ""} ${
+                  userDetails?.lastName
+                }`
+            );
+            setCardType(detectCardType(cardDetails.card_number));
             setShow(true);
           }
         } else {
-          //toast.error(cardsData.message);
+          toast.error(cardsData.message);
         }
       } catch (error) {
-        console.error(error);
+        console.error("Error showing card details:", error);
+        toast.error("Failed to retrieve card details.");
       } finally {
         setLoading(false);
       }
     } else {
       toast.error(
-        "Card details not available for suspended or locked cards. Please activate your card to see it's details."
+        "Card details not available for suspended or locked cards. Please activate your card to see its details."
       );
     }
   };
@@ -934,7 +972,6 @@ export const CreditCardView = ({
   useEffect(() => {
     if (show) {
       const timer = setTimeout(() => setShow(false), 5000); // Reverts after 5s
-
       return () => clearTimeout(timer); // Cleanup on re-renders
     }
   }, [show]);
@@ -942,232 +979,231 @@ export const CreditCardView = ({
   return (
     <>
       {isLoading ? (
-        <>
-          <Card
-            style={{
-              backgroundImage: `url(${randomImage})`,
-              backgroundSize: "cover",
-              borderRadius: "8px",
-              height: "200px",
-              width: "325px",
-              justifyContent: "center",
-              alignItems: "center",
-              display: "flex",
-              color: "white",
-            }}
-          >
-            <Spinner
-              animation="border"
-              role="status"
-              variant="light"
-              size="small"
-            />
-            <label style={{ marginTop: "20px", fontSize: 12 }}>
-              Fetching your card details, please wait...
-            </label>
-          </Card>
-        </>
+        <Card
+          style={{
+            backgroundImage: `url(${randomImage})`,
+            backgroundSize: "cover",
+            borderRadius: "8px",
+            height: "200px",
+            width: "325px",
+            justifyContent: "center",
+            alignItems: "center",
+            display: "flex",
+            color: "white",
+          }}
+        >
+          <Spinner
+            animation="border"
+            role="status"
+            variant="light"
+            size="small"
+          />
+          <label style={{ marginTop: "20px", fontSize: 12 }}>
+            Fetching your card details, please wait...
+          </label>
+        </Card>
       ) : (
         <div className="d-flex justify-content-start align-items-start">
           {!item ? (
-            <>
-              <Card
-                style={{
-                  background: `linear-gradient(90deg, lightgrey, white)`,
-                  borderRadius: "8px",
-                  border: "2px solid rgba(0,0,0,0.45)",
-                  borderStyle: "dashed",
-                  height: "200px",
-                  width: "325px",
-                  padding: "1.5rem",
-                  color: "black",
-                  justifyContent: "space-between",
+            <Card
+              style={{
+                background: `linear-gradient(90deg, lightgrey, white)`,
+                borderRadius: "8px",
+                border: "2px solid rgba(0,0,0,0.45)",
+                borderStyle: "dashed",
+                height: "200px",
+                width: "325px",
+                padding: "1.5rem",
+                color: "black",
+                justifyContent: "space-between",
+              }}
+            >
+              <div
+                className="d-flex align-items-center justify-content-center mx-auto my-auto gap-2 flex-column"
+                onClick={() => {
+                  dispatch(setActiveTab("Cards"));
+                  navigate("/cards");
                 }}
               >
-                <div
-                  className="d-flex align-items-center justify-content-center mx-auto my-auto gap-2 flex-column"
-                  onClick={() => {
-                    dispatch(setActiveTab("Cards"));
-                    navigate("/cards");
-                  }}
-                >
-                  <AddCircleOutline className="fs-2" />
-
-                  <label htmlFor="" className="fs-7">
-                    Add Your First Card
-                  </label>
-                </div>
-              </Card>
-            </>
+                <AddCircleOutline className="fs-2" />
+                <label htmlFor="" className="fs-7">
+                  Add Your First Card
+                </label>
+              </div>
+            </Card>
           ) : (
-            <>
-              <Card
-                style={{
-                  backgroundImage: `url(${randomImage})`,
-                  backgroundSize: "cover",
-                  borderRadius: "8px",
-                  height: "200px",
-                  width: "325px",
-                  padding: "0.5rem",
-                  color: "white",
-                  justifyContent: "space-between",
-                }}
-              >
-                <div className="d-flex align-items-center justify-content-between">
-                  {!show ? (
-                    <>
-                      {/* {cardLogos["Others"]} */}
-                      <div className="d-flex">
-                        <p
-                          className="pb-0 mb-0 text-white text-lowercase"
-                          style={{
-                            transform: "rotate(-90deg)",
-                            position: "absolute",
-                            left: "-8px",
-                            top: "35px",
-                          }}
-                        >
-                          BUSINESS
-                        </p>
-                        <div
-                          className="d-flex flex-column gap-3 justify-content-between"
-                          style={{
-                            position: "absolute",
-                            top: "-2px",
-                            left: "40px",
-                          }}
-                        >
-                          <img
-                            src="/cover/contactless.png"
-                            alt=""
-                            width={50}
-                            style={{ transform: "rotate(-90deg)" }}
-                          />
-                          <img
-                            src="/cover/chip.png"
-                            alt=""
-                            width={60}
-                            style={{ transform: "rotate(90deg)" }}
-                          />
+            <Card
+              style={{
+                backgroundImage: `url(${randomImage})`,
+                backgroundSize: "cover",
+                borderRadius: "8px",
+                height: "200px",
+                width: "325px",
+                padding: "0.5rem",
+                color: "white",
+                justifyContent: "space-between",
+              }}
+            >
+              <div className="d-flex align-items-center justify-content-between">
+                {!show ? (
+                  <>
+                    <div className="d-flex">
+                      <p
+                        className="pb-0 mb-0 text-white text-lowercase"
+                        style={{
+                          transform: "rotate(-90deg)",
+                          position: "absolute",
+                          left: "-8px",
+                          top: "35px",
+                        }}
+                      >
+                        {apiCardType === "GPR_PHY" ? "PHYSICAL" : "VIRTUAL"}
+                      </p>
+                      <div
+                        className="d-flex flex-column gap-3 justify-content-between"
+                        style={{
+                          position: "absolute",
+                          top: "-2px",
+                          left: "40px",
+                        }}
+                      >
+                        <img
+                          src="/cover/contactless.png"
+                          alt="Contactless"
+                          width={50}
+                          style={{ transform: "rotate(-90deg)" }}
+                        />
+                        <img
+                          src="/cover/chip.png"
+                          alt="Chip"
+                          width={60}
+                          style={{ transform: "rotate(90deg)" }}
+                        />
 
-                          <div class="dots-container" style={{ gap: 5 }}>
-                            <div
-                              className="d-flex flex-column"
-                              style={{ gap: 5, marginTop: 7 }}
-                            >
-                              <div class="dot"></div>
-                              <div class="dot"></div>
-                            </div>
-                            <div
-                              className="d-flex flex-column"
-                              style={{ gap: 5 }}
-                            >
-                              <div class="dot"></div>
-                              <div class="dot"></div>
-                            </div>
+                        <div className="dots-container" style={{ gap: 5 }}>
+                          <div
+                            className="d-flex flex-column"
+                            style={{ gap: 5, marginTop: 7 }}
+                          >
+                            <div className="dot"></div>
+                            <div className="dot"></div>
+                          </div>
+                          <div
+                            className="d-flex flex-column"
+                            style={{ gap: 5 }}
+                          >
+                            <div className="dot"></div>
+                            <div className="dot"></div>
                           </div>
                         </div>
                       </div>
+                    </div>
+                    <div
+                      className="d-flex align-items-center"
+                      style={{ position: "absolute", left: "140px" }}
+                    >
                       <div
-                        className="d-flex align-items-center"
-                        style={{ position: "absolute", left: "140px" }}
-                      >
-                        <div
-                          style={{
-                            backgroundColor:
-                              item.cardStatus === "active"
-                                ? "green"
-                                : item.cardStatus === "suspended"
-                                ? "red"
-                                : "yellow",
-                            borderRadius: "50%",
-                            width: "8px",
-                            height: "8px",
-                            marginRight: "6px",
-                          }}
-                        ></div>
-                        <span style={{ fontWeight: "600", fontSize: 10 }}>
-                          {item.cardStatus.toUpperCase()}
-                        </span>
+                        style={{
+                          backgroundColor:
+                            cardStatus?.toLowerCase() === "active"
+                              ? "green"
+                              : cardStatus?.toLowerCase() === "suspended"
+                              ? "red"
+                              : "yellow",
+                          borderRadius: "50%",
+                          width: "8px",
+                          height: "8px",
+                          marginRight: "6px",
+                        }}
+                      ></div>
+                      <span style={{ fontWeight: "600", fontSize: 10 }}>
+                        {cardStatus?.toUpperCase()}
+                      </span>
+                    </div>
+                    <div style={{ transform: "rotate(-90deg)" }}>
+                      {cardLogos[detectCardType(maskedCardNumber)] ||
+                        cardLogos["Other"]}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="d-flex align-items-center justify-content-between w-100">
+                      <div className="d-flex align-items-center">
+                        <img
+                          src="/auth/logo-white.png"
+                          alt="Stylopay Logo"
+                          width={30}
+                          height={30}
+                        />
+                        <p className="pb-0 mb-0 fw-600 fs-9 text-white">
+                          Stylopay
+                        </p>
                       </div>
-                      <div style={{ transform: "rotate(-90deg)" }}>
-                        {cardLogos["Mastercard"]}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="d-flex align-items-center justify-content-between w-100">
-                        <div className="d-flex align-items-center">
-                          <img
-                            src="/auth/logo-white.png"
-                            alt=""
-                            width={30}
-                            height={30}
-                          />
-                          <p className="pb-0 mb-0 fw-600 fs-9 text-white">
-                            Stylopay
-                          </p>
-                        </div>
-                        <img src="/banks/matchmove.png" alt="" width={100} />
-                      </div>
-                    </>
-                  )}
-                </div>
+                      {/* <img
+                        src="/banks/matchmove.png"
+                        alt="Matchmove Logo"
+                        width={100}
+                      /> */}
+                    </div>
+                  </>
+                )}
+              </div>
 
-                <div
-                  style={{
-                    fontSize: "22px",
-                    textAlign: "center",
-                  }}
-                >
-                  {!show ? "" : cardNumber || "XXXX XXXX XXXX XXXX"}
-                </div>
+              <div
+                style={{
+                  fontSize: "22px",
+                  textAlign: "center",
+                }}
+              >
+                {!show
+                  ? formatCardNumberDisplay(maskedCardNumber)
+                  : cardNumber || "XXXX XXXX XXXX XXXX"}
+              </div>
 
-                <div
-                  className={`d-flex align-items-center justify-content-${
-                    !show ? "end me-3" : "center"
-                  } gap-5 mb-2`}
-                >
-                  {!show ? (
-                    <>
-                      <div>
-                        <label className="fs-9">Card Type</label>
-                        <div style={{ fontWeight: "600", fontSize: 12 }}>
-                          {item?.type?.toUpperCase()}
-                        </div>
+              <div
+                className={`d-flex align-items-center justify-content-${
+                  !show ? "end me-3" : "center"
+                } gap-5 mb-2`}
+              >
+                {!show ? (
+                  <>
+                    <div>
+                      <label className="fs-9">Card Type</label>
+                      <div style={{ fontWeight: "600", fontSize: 12 }}>
+                        {apiCardType === "GPR_PHY" ? "PHYSICAL" : "VIRTUAL"}
                       </div>
-                      <div>
-                        <label className="fs-9">Last 4 Digits</label>
-                        <div style={{ fontWeight: "600", fontSize: 12 }}>
-                          {item?.last4 || "****"}
-                        </div>
+                    </div>
+                    <div>
+                      <label className="fs-9">Last 4 Digits</label>
+                      <div style={{ fontWeight: "600", fontSize: 12 }}>
+                        {maskedCardNumber ? maskedCardNumber.slice(-4) : "****"}{" "}
                       </div>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        <div className="fs-9">Card Holder</div>
-                        <div style={{ fontWeight: "600", fontSize: 12 }}>
-                          {holderName || "John Doe"}
-                        </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <div className="fs-9">Card Holder</div>
+                      <div style={{ fontWeight: "600", fontSize: 12 }}>
+                        {holderName || "John Doe"}
                       </div>
-                      <div>
-                        <div className="fs-9">Valid Thru</div>
-                        <div style={{ fontWeight: "600", fontSize: 12 }}>
-                          {expiryDate || "MM/YY"}
-                        </div>
+                    </div>
+                    <div>
+                      <div className="fs-9">Valid Thru</div>
+                      <div style={{ fontWeight: "600", fontSize: 12 }}>
+                        {expiryDate || "MM/YY"}
                       </div>
-                      <div className="fs-9">
-                        <div>CVV</div>
-                        <div style={{ fontWeight: "600", fontSize: 12 }}>
-                          {cvv || "***"}
-                        </div>
+                    </div>
+                    <div className="fs-9">
+                      <div>CVV</div>
+                      <div style={{ fontWeight: "600", fontSize: 12 }}>
+                        {cvv || "***"}
                       </div>
-                    </>
-                  )}
-                </div>
-              </Card>
-            </>
+                    </div>
+                  </>
+                )}
+              </div>
+            </Card>
           )}
 
           <div className="d-flex flex-column justify-content-center align-items-center ms-2 gap-2">
@@ -1218,8 +1254,7 @@ export const CreditCardView = ({
                 </Tooltip>
               </div>
             )}
-
-            {item.type === "virtual" &&
+            {item.cardType !== "virtual" && // Condition updated
               location.pathname === "/cards" &&
               !hide && (
                 <div className="border rounded-pill bg-white">
