@@ -888,9 +888,9 @@ export const CreditCardView = ({
       />
     ),
     Visa: <img src="/banks/visa-logo.png" alt="Visa" style={{ width: 60 }} />,
-    Other: (
-      <img src="/banks/matchmove.png" alt="Other Card" style={{ width: 80 }} />
-    ),
+    // Other: (
+    //   <img src="/banks/matchmove.png" alt="Other Card" style={{ width: 80 }} />
+    // ),
   };
 
   const cardCovers = ["/cover/card-cover-1.png"];
