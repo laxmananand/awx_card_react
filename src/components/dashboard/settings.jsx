@@ -59,6 +59,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import {
+  fetchUser,
   deleteUserDetails,
   fetchKyb,
   forgotPassword,
@@ -138,60 +139,56 @@ export const Profile = () => {
   const [title, setTitle] = useState(
     titleList.find((option) => option.value === userDetails?.title || "")
   );
-  const [firstName, setFirstName] = useState(userDetails?.firstName || "");
-  const [middleName, setMiddleName] = useState(userDetails?.middleName || "");
-  const [lastName, setLastName] = useState(userDetails?.lastName || "");
+  const [firstName, setFirstName] = useState(userDetails?.cardholderDetails?.firstName || "");
+  const [middleName, setMiddleName] = useState(userDetails?.cardholderDetails?.middleName || "");
+  const [lastName, setLastName] = useState(userDetails?.cardholderDetails?.lastName || "");
   const [gender, setGender] = useState(
-    genderList.find((option) => option.value === userDetails?.gender || "")
+    genderList.find((option) => option.value === userDetails?.cardholderDetails?.gender || "")
   );
   const [dateOfBirth, setDateOfBirth] = useState(
     userDetails?.dateOfBirth || ""
   );
   const [mobileCountryCode, setMobileCountryCode] = useState(
     mobileCountryCodeList.find(
-      (option) => option.value === userDetails?.mobileCountryCode || ""
+      (option) => option.value === userDetails?.cardholderDetails?.mobileNumber?.split("-")[0] || ""
     )
   );
-  const [mobile, setMobile] = useState(userDetails?.mobile || "");
+  const [mobile, setMobile] = useState(userDetails?.cardholderDetails?.mobileNumber || "");
   const [nationality, setNationality] = useState(
     nationalityList.find(
       (option) => option.label === userDetails?.nationality || ""
     )
   );
-  const [deliveryAddress1, setDeliveryAddress1] = useState(
-    userDetails?.deliveryAddress1 || userDetails?.foundationAddress1 || ""
+  const [deliveryAddress1, setDeliveryAddress1] = useState(userDetails?.cardholderDetails?.deliveryAddress || userDetails?.foundationAddress1 || ""
   );
   const [deliveryAddress2, setDeliveryAddress2] = useState(
-    userDetails?.deliveryAddress2 || userDetails?.foundationAddress2 || ""
+    userDetails?.cardholderDetails?.deliveryAddress || userDetails?.foundationAddress2 || ""
   );
-  const [deliveryCity, setDeliveryCity] = useState(
-    userDetails?.deliveryCity || userDetails?.foundationCity || ""
+  const [deliveryCity, setDeliveryCity] = useState( userDetails?.cardholderDetails?.deliveryCity || userDetails?.foundationCity || ""
   );
-  const [deliveryState, setDeliveryState] = useState(
-    userDetails?.deliveryState || userDetails?.foundationState || ""
+  const [deliveryState, setDeliveryState] = useState( userDetails?.cardholderDetails?.deliveryState || userDetails?.foundationState || ""
   );
   const [deliveryCountry, setDeliveryCountry] = useState(
     countryList.find(
       (option) =>
-        option.label === userDetails?.deliveryCountry ||
-        option.label === userDetails?.foundationCountry ||
+        option.value === userDetails?.cardholderDetails?.deliveryCountry ||
+        option.value === userDetails?.cardholderDetails?.foundationCountry ||
         ""
     )
-  );
+  ); 
+  // const [deliveryCountry, setDeliveryCountry] = useState("GB")                 
+  
   const [deliveryZipCode, setDeliveryZipCode] = useState(
     userDetails?.deliveryZipCode || userDetails?.foundationZipcode || ""
   );
-  const [billingAddress1, setBillingAddress1] = useState(
-    userDetails?.billingAddress1 || userDetails?.operationalAddress1 || ""
+  const [billingAddress1, setBillingAddress1] = useState(userDetails?.cardholderDetails?.billingAddress || userDetails?.operationalAddress1 || ""
   );
-  const [billingAddress2, setBillingAddress2] = useState(
-    userDetails?.billingAddress2 || userDetails?.operationalAddress2 || ""
+  // const [billingAddress2, setBillingAddress2] = useState(
+  //   userDetails?.billingAddress2 || userDetails?.operationalAddress2 || ""
+  // );
+  const [billingCity, setBillingCity] = useState(userDetails?.cardholderDetails?.billingCity || userDetails?.operationalCity || ""
   );
-  const [billingCity, setBillingCity] = useState(
-    userDetails?.billingCity || userDetails?.operationalCity || ""
-  );
-  const [billingState, setBillingState] = useState(
-    userDetails?.billingState || userDetails?.operationalState || ""
+  const [billingState, setBillingState] = useState(userDetails?.cardholderDetails?.billingState || userDetails?.operationalState || ""
   );
   const [billingCountry, setBillingCountry] = useState(
     countryList.find(
@@ -201,8 +198,7 @@ export const Profile = () => {
         ""
     )
   );
-  const [billingZipCode, setBillingZipCode] = useState(
-    userDetails?.billingZipCode || userDetails?.operationalZipcode || ""
+  const [billingPostcode, setbillingPostcode] = useState( userDetails?.cardholderDetails?.billingPostcode || userDetails?.operationalZipcode || ""
   );
 
   const validateFields = ({
@@ -224,7 +220,7 @@ export const Profile = () => {
     billingCity,
     billingState,
     billingCountry,
-    billingZipCode,
+    billingPostcode,
   }) => {
     // Required Fields
     const requiredFields = [
@@ -245,7 +241,7 @@ export const Profile = () => {
       { value: billingCity, name: "Billing City" },
       { value: billingState, name: "Billing State" },
       { value: billingCountry, name: "Billing Country" },
-      { value: billingZipCode, name: "Billing Zip Code" },
+      { value: billingPostcode, name: "Billing Zip Code" },
     ];
 
     for (let field of requiredFields) {
@@ -321,7 +317,7 @@ export const Profile = () => {
       return false;
     }
 
-    if (billingZipCode && !regex.zipCode.pattern.test(billingZipCode)) {
+    if (billingPostcode && !regex.zipCode.pattern.test(billingPostcode)) {
       toast.error(`Billing Zip Code: ${regex.zipCode.message}`);
       return false;
     }
@@ -394,8 +390,8 @@ export const Profile = () => {
     if (billingCountry?.label !== userDetails?.billingCountry) {
       updatedData.billingCountry = billingCountry?.label;
     }
-    if (billingZipCode !== userDetails?.billingZipCode) {
-      updatedData.billingZipCode = billingZipCode;
+    if (billingPostcode !== userDetails?.billingPostcode) {
+      updatedData.billingPostcode = billingPostcode;
     }
 
     return updatedData;
@@ -421,7 +417,7 @@ export const Profile = () => {
       billingCity,
       billingState,
       billingCountry,
-      billingZipCode,
+      billingPostcode,
     });
 
     console.log(isValid);
@@ -540,7 +536,7 @@ export const Profile = () => {
     billingCity,
     billingState,
     billingCountry,
-    billingZipCode,
+    billingPostcode,
   }) => {
     // Required Fields
     const requiredFields = [
@@ -564,7 +560,7 @@ export const Profile = () => {
       { value: billingCity, name: "Operational City" },
       { value: billingState, name: "Operational State" },
       { value: billingCountry, name: "Operational Country" },
-      { value: billingZipCode, name: "Operational Zip Code" },
+      { value: billingPostcode, name: "Operational Zip Code" },
     ];
 
     for (let field of requiredFields) {
@@ -660,7 +656,7 @@ export const Profile = () => {
       return false;
     }
 
-    if (!regex.zipCode.pattern.test(billingZipCode)) {
+    if (!regex.zipCode.pattern.test(billingPostcode)) {
       toast.error(`Operational Zip Code: ${regex.zipCode.message}`);
       return false;
     }
@@ -746,8 +742,8 @@ export const Profile = () => {
     if (billingCountry?.label !== userDetails?.operationalCountry) {
       updatedData.operationalCountry = billingCountry?.value;
     }
-    if (billingZipCode !== userDetails?.operationalZipcode) {
-      updatedData.operationalZipcode = billingZipCode;
+    if (billingPostcode !== userDetails?.operationalZipcode) {
+      updatedData.operationalZipcode = billingPostcode;
     }
 
     return updatedData;
@@ -774,7 +770,7 @@ export const Profile = () => {
       billingCity,
       billingState,
       billingCountry,
-      billingZipCode,
+      billingPostcode,
     });
 
     console.log(isValid);
@@ -826,7 +822,7 @@ export const Profile = () => {
                   ? `${firstName} ${middleName && middleName} ${lastName}`
                   : `${businessName}`}
               </label>
-              <p>{`${billingCity}, ${billingCountry?.label}`}</p>
+              <p>{`${deliveryCity}, ${deliveryCountry?.label}`}</p>
             </div>
           </div>
 
@@ -987,7 +983,7 @@ export const Profile = () => {
                     max={35}
                   />
 
-                  <CustomInput
+                  {/* <CustomInput
                     disabled={edit}
                     value={deliveryAddress2}
                     onInput={setDeliveryAddress2}
@@ -997,7 +993,7 @@ export const Profile = () => {
                     required
                     regex={regex.addressLine}
                     type={"adressLine"}
-                  />
+                  /> */}
                   <CustomInput
                     disabled={edit}
                     value={deliveryCity}
@@ -1069,7 +1065,7 @@ export const Profile = () => {
                     max={35}
                   />
 
-                  <CustomInput
+                  {/* <CustomInput
                     disabled={edit}
                     value={billingAddress2}
                     onInput={setBillingAddress2}
@@ -1079,7 +1075,7 @@ export const Profile = () => {
                     required
                     regex={regex.addressLine}
                     type={"adressLine"}
-                  />
+                  /> */}
                   <CustomInput
                     disabled={edit}
                     value={billingCity}
@@ -1106,8 +1102,8 @@ export const Profile = () => {
 
                   <CustomInput
                     disabled={edit}
-                    value={billingZipCode}
-                    onInput={setBillingZipCode}
+                    value={billingPostcode}
+                    onInput={setbillingPostcode}
                     leftIcon={<Explore />}
                     label={"Billing Zipcode"}
                     max={8}
@@ -1328,7 +1324,7 @@ export const Profile = () => {
                     leftIcon={<NearMe />}
                     label={"Foundation Address 2"}
                     max={35}
-                    required
+                    // required
                     regex={regex.addressLine}
                     type={"adressLine"}
                   />
@@ -1452,8 +1448,8 @@ export const Profile = () => {
 
                   <CustomInput
                     disabled={edit}
-                    value={billingZipCode}
-                    onInput={setBillingZipCode}
+                    value={billingPostcode}
+                    onInput={setbillingPostcode}
                     leftIcon={<Explore />}
                     label={"Operational Zipcode"}
                     max={8}

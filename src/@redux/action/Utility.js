@@ -27,8 +27,8 @@ export const fetchDnsDetails = () => async (dispatch, getState) => {
   let origin = null;
 
   if (location.hostname === "localhost") {
-    origin = "webapp-mcusd.stylopay.com";
-    //origin = "baasusd-stylopay.vercel.app";
+    // origin = "webapp-mcusd.stylopay.com";
+    origin = "baasusd-stylopay.vercel.app";
   } else {
     let host = location.hostname;
     if (host.includes("cards")) {
