@@ -110,9 +110,9 @@ const App = () => {
   useEffect(() => {
     if (dnsDetails) {
       // Run these actions only when dnsDetails is populated
-      dispatch(getCountryList(dnsDetails?.program_id));
-      dispatch(getMobileCountryCodeList(dnsDetails?.program_id));
-      dispatch(getNationalityList(dnsDetails?.program_id));
+      dispatch(getCountryList("ZOQQ"));
+      dispatch(getMobileCountryCodeList("ZOQQ"));
+      dispatch(getNationalityList("ZOQQ"));
       dispatch(
         fetchFeeDetails(dnsDetails?.agent_code, dnsDetails?.subagent_code)
       );

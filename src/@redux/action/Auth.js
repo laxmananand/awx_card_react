@@ -57,7 +57,15 @@ export const cognitoGetUser =
           cardHolderId: findCardholder?.value,
         })
       );
-
+      // ✅ Directly fetch cardholder details
+      const cardholderId = findCardholder?.value;
+      console.log("Cardholder ID: rohit ", cardholderId);
+      if (cardholderId) {
+        // ✅ Cardholder ID mila toh fetchUser karo
+        await dispatch(fetchUser(cardholderId));
+      } else {
+        console.warn("No cardholder ID found!");
+      }
       const responseBody = {};
 
       if (response.data.UserStatus) {
@@ -332,26 +340,57 @@ export const logout =
   };
 
 // Fetch User Details
-export const fetchUser = (email, type) => async (dispatch, getState) => {
-  const userDetails = getState().auth?.userDetails;
+// 
+// export const fetchUser = (cardholderId) => async (dispatch, getState) => {
+//   try {
+//     // Apne Node.js backend proxy endpoint ko hit karo
+//     const url = `${process.env.VITE_API_ZOOQ}/awx/fetch-cardholder-details-awx?id=${cardholderId}`;
 
-  // Avoid unnecessary API calls if userDetails exist & type is "fetch"
-  if (type === "fetch" && userDetails) {
-    return userDetails;
-  }
+//     const response = await axiosInstance.get(url, {
+//       headers: {
+//         "x-user-id": getState().auth?.user?.userId,
+//       },
+//     });
 
+//     console.log("Fetched Cardholder Details: ", response.data);
+
+//     if (response.data.status === "success") {
+//       dispatch(
+//         setUserDetails({
+//           cardholderDetails: response.data.data[0],
+//         })
+//       );
+//       dispatch(setOnboarded(true));
+//       return response.data;
+//     } else {
+//       console.warn("Cardholder details fetch failed");
+//       return response.data;
+//     }
+//   } catch (error) {
+//     return handleApiError(error);
+//   }
+// };
+
+
+export const fetchUser = (cardholderId) => async (dispatch, getState) => {
   try {
-    const url = `${process.env.VITE_apiurl}/caas/user/${email}`;
+    const url = `${process.env.VITE_API_ZOOQ}/awx/fetch-cardholder-details-awx?id=${cardholderId}`;
+    console.log("👉 Fetch Cardholder URL:", url);
+    console.log("📌 cardholderId:", cardholderId);
+ 
     const response = await axiosInstance.get(url);
-    console.log("Fetch user: ", response.data);
-
-    if (response.data.status === "SUCCESS") {
-      dispatch(setUserDetails(response.data)); // Save user details to Redux
-      dispatch(setOnboarded(true)); // Mark user as onboarded
+ 
+    console.log("✅ Response:", response);
+    console.log("📄 Cardholder Details:", response.data?.data?.[0]);
+ 
+    if (response.data?.data?.[0]) {
+      dispatch(setUserDetails({
+        cardholderDetails: response.data.data[0],
+      }));
+      dispatch(setOnboarded(true));
       return response.data;
     } else {
-      // toast.error("Whoops! It looks like you haven't registered yet.");
-      return response.data;
+      return { status: "ERROR", message: "No data found" };
     }
   } catch (error) {
     return handleApiError(error);
