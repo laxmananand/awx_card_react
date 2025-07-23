@@ -62,14 +62,14 @@ export const Sidebar = () => {
       link: "/transactions",
     },
     {
-      name: program === "SMMAAS0" ? "Cards" : "Remittance",
+      name: program === "SAVAAM0" ? "Cards" : "Remittance",
       icon:
-        program === "SMMAAS0" ? (
+        program === "SAVAAM0" ? (
           <CreditCard fontSize={iconSize} />
         ) : (
           <ConnectingAirports fontSize={iconSize} />
         ),
-      link: program === "SMMAAS0" ? "/cards" : "/remittance",
+      link: program === "SAVAAM0" ? "/cards" : "/remittance",
     },
 
     {

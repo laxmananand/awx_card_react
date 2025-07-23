@@ -24,7 +24,7 @@ import {
 import { addAccount } from "./dashboard";
 import { useNavigate } from "react-router-dom";
 import { setActiveTab } from "../../@redux/feature/Utility";
-import { Divider } from "@mui/material";
+import { Divider, CircularProgress } from "@mui/material";
 import {
   activateCardDetails,
   addPhysicalCard,
@@ -44,12 +44,21 @@ export const Cards = () => {
   const cardHolderId = useSelector((state) => state.auth.user?.cardHolderId);
   const userId = useSelector((state) => state.auth.user?.userId);
 
+  // State to manage the loading of cards
+  const [isLoadingCards, setIsLoadingCards] = useState(true);
+
   useEffect(() => {
-    if (userId && cardHolderId) {
-      dispatch(getCardsAPI(userId, cardHolderId, "update"));
-    }
+    const fetchCards = async () => {
+      if (userId && cardHolderId) {
+        setIsLoadingCards(true); // Set loading to true before API call
+        await dispatch(getCardsAPI(userId, cardHolderId, "update"));
+        setIsLoadingCards(false); // Set loading to false after API call completes
+      }
+    };
+    fetchCards();
   }, [userId, cardHolderId, dispatch]);
-  const [isLoading, setLoading] = useState(false);
+
+  const [isLoading, setLoading] = useState(false); // This state seems to be for other buttons/actions
   const navigate = useNavigate();
 
   const SetPage = () => {
@@ -564,7 +573,8 @@ export const Cards = () => {
         <>
           <div className="d-flex align-items-center justify-content-between gap-3 pb-4">
             <h5>Manage Your Card(s)</h5>
-            {cards.length > 0 && (
+            {/* Show "Add Card(s)" button only when not loading */}
+            {!isLoadingCards && (
               <div
                 className="d-flex align-items-center justify-content-end gap-2 me-5"
                 onClick={openCardModal}
@@ -577,7 +587,19 @@ export const Cards = () => {
             )}
           </div>
 
-          {cards.length > 0 ? (
+          {/* Conditional rendering for loader or cards */}
+          {isLoadingCards ? (
+            <div
+              className="d-flex flex-column justify-content-center align-items-center"
+              style={{ minHeight: "60vh" }}
+            >
+              <CircularProgress size={60} sx={{ color: "primary.main" }} />{" "}
+              {/* Big and colorful */}
+              <label htmlFor="" className="fs-6 text-secondary mt-3">
+                Loading cards...
+              </label>
+            </div>
+          ) : cards.length > 0 ? (
             <div className="card-container">
               {cards.map((item, index) => (
                 <CreditCardView
