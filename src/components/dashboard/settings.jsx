@@ -178,8 +178,8 @@ export const Profile = () => {
   ); 
   // const [deliveryCountry, setDeliveryCountry] = useState("GB")                 
   
-  const [deliveryZipCode, setDeliveryZipCode] = useState(
-    userDetails?.deliveryZipCode || userDetails?.foundationZipcode || ""
+  const [deliveryPostcode, setdeliveryPostcode] = useState(
+   userDetails?.cardholderDetails?.deliveryPostcode || userDetails?.foundationZipcode || ""
   );
   const [billingAddress1, setBillingAddress1] = useState(userDetails?.cardholderDetails?.billingAddress || userDetails?.operationalAddress1 || ""
   );
@@ -193,8 +193,8 @@ export const Profile = () => {
   const [billingCountry, setBillingCountry] = useState(
     countryList.find(
       (option) =>
-        option.label === userDetails?.billingCountry ||
-        option.label === userDetails?.operationalCountry ||
+        option.value === userDetails?.cardholderDetails?.billingCountry ||
+        option.value === userDetails?.cardholderDetails?.operationalCountry ||
         ""
     )
   );
@@ -202,21 +202,21 @@ export const Profile = () => {
   );
 
   const validateFields = ({
-    title,
+    //title,
     firstName,
     middleName,
     lastName,
-    gender,
-    dateOfBirth,
+    //gender,
+   // dateOfBirth,
     mobileCountryCode,
     mobile,
-    nationality,
-    deliveryAddress1,
+   // nationality,
+    deliveryAddress,
     deliveryCity,
     deliveryState,
     deliveryCountry,
-    deliveryZipCode,
-    billingAddress1,
+    deliveryPostcode,
+    billingAddress,
     billingCity,
     billingState,
     billingCountry,
@@ -236,7 +236,7 @@ export const Profile = () => {
       { value: deliveryCity, name: "Delivery City" },
       { value: deliveryState, name: "Delivery State" },
       { value: deliveryCountry, name: "Delivery Country" },
-      { value: deliveryZipCode, name: "Delivery Zip Code" },
+      { value: deliveryPostcode, name: "Delivery Zip Code" },
       { value: billingAddress1, name: "Billing Address" },
       { value: billingCity, name: "Billing City" },
       { value: billingState, name: "Billing State" },
@@ -292,7 +292,7 @@ export const Profile = () => {
       return false;
     }
 
-    if (deliveryZipCode && !regex.zipCode.pattern.test(deliveryZipCode)) {
+    if (deliveryPostcode && !regex.zipCode.pattern.test(deliveryPostcode)) {
       toast.error(`Delivery Zip Code: ${regex.zipCode.message}`);
       return false;
     }
@@ -326,124 +326,195 @@ export const Profile = () => {
   };
 
   // Function to create the `data` object with changed values
-  const getUpdatedData = () => {
-    const updatedData = {};
+  // const getUpdatedData = () => {
+  //   const updatedData = {};
 
-    // Check each field and compare with `userDetails`
-    if (title?.value !== userDetails?.title) {
-      updatedData.title = title?.value;
-    }
-    if (firstName !== userDetails?.firstName) {
-      updatedData.firstName = firstName;
-    }
-    if (middleName !== userDetails?.middleName) {
-      updatedData.middleName = middleName;
-    }
-    if (lastName !== userDetails?.lastName) {
-      updatedData.lastName = lastName;
-    }
-    if (gender?.value !== userDetails?.gender) {
-      updatedData.gender = gender?.value;
-    }
-    if (dateOfBirth !== userDetails?.dateOfBirth) {
-      updatedData.dateOfBirth = dateOfBirth;
-    }
-    if (mobileCountryCode?.value !== userDetails?.mobileCountryCode) {
-      updatedData.mobileCountryCode = mobileCountryCode?.value;
-    }
-    if (mobile !== userDetails?.mobile) {
-      updatedData.mobile = mobile;
-    }
-    if (nationality?.label !== userDetails?.nationality) {
-      updatedData.nationality = nationality?.label;
-    }
-    if (deliveryAddress1 !== userDetails?.deliveryAddress1) {
-      updatedData.deliveryAddress1 = deliveryAddress1;
-    }
-    if (deliveryAddress2 !== userDetails?.deliveryAddress2) {
-      updatedData.deliveryAddress2 = deliveryAddress2;
-    }
-    if (deliveryCity !== userDetails?.deliveryCity) {
-      updatedData.deliveryCity = deliveryCity;
-    }
-    if (deliveryState !== userDetails?.deliveryState) {
-      updatedData.deliveryState = deliveryState;
-    }
-    if (deliveryCountry?.label !== userDetails?.deliveryCountry) {
-      updatedData.deliveryCountry = deliveryCountry?.label;
-    }
-    if (deliveryZipCode !== userDetails?.deliveryZipCode) {
-      updatedData.deliveryZipCode = deliveryZipCode;
-    }
-    if (billingAddress1 !== userDetails?.billingAddress1) {
-      updatedData.billingAddress1 = billingAddress1;
-    }
-    if (billingAddress2 !== userDetails?.billingAddress2) {
-      updatedData.billingAddress2 = billingAddress2;
-    }
-    if (billingCity !== userDetails?.billingCity) {
-      updatedData.billingCity = billingCity;
-    }
-    if (billingState !== userDetails?.billingState) {
-      updatedData.billingState = billingState;
-    }
-    if (billingCountry?.label !== userDetails?.billingCountry) {
-      updatedData.billingCountry = billingCountry?.label;
-    }
-    if (billingPostcode !== userDetails?.billingPostcode) {
-      updatedData.billingPostcode = billingPostcode;
-    }
-
-    return updatedData;
+  //   // Check each field and compare with `userDetails`
+  //   // if (title?.value !== userDetails?.title) {
+  //   //   updatedData.title = title?.value;
+  //   // }
+  //   if (firstName !== userDetails?.firstName) {
+  //     updatedData.firstName = firstName;
+  //   }
+  //   if (middleName !== userDetails?.middleName) {
+  //     updatedData.middleName = middleName;
+  //   }
+  //   if (lastName !== userDetails?.lastName) {
+  //     updatedData.lastName = lastName;
+  //   }
+  //   // if (gender?.value !== userDetails?.gender) {
+  //   //   updatedData.gender = gender?.value;
+  //   // }
+  //   // if (dateOfBirth !== userDetails?.dateOfBirth) {
+  //   //   updatedData.dateOfBirth = dateOfBirth;
+  //   // }
+  //   if (mobileCountryCode?.value !== userDetails?.mobileCountryCode) {
+  //     updatedData.mobileCountryCode = mobileCountryCode?.value;
+  //   }
+  //   if (mobile !== userDetails?.mobile) {
+  //     updatedData.mobile = mobile;
+  //   }
+  //   // if (nationality?.label !== userDetails?.nationality) {
+  //   //   updatedData.nationality = nationality?.label;
+  //   // }
+  //   if (deliveryAddress1 !== userDetails?.deliveryAddress1) {
+  //     updatedData.deliveryAddress1 = deliveryAddress1;
+  //   }
+  //   if (deliveryAddress2 !== userDetails?.deliveryAddress2) {
+  //     updatedData.deliveryAddress2 = deliveryAddress2;
+  //   }
+  //   if (deliveryCity !== userDetails?.deliveryCity) {
+  //     updatedData.deliveryCity = deliveryCity;
+  //   }
+  //   if (deliveryState !== userDetails?.deliveryState) {
+  //     updatedData.deliveryState = deliveryState;
+  //   }
+  //   if (deliveryCountry?.label !== userDetails?.deliveryCountry) {
+  //     updatedData.deliveryCountry = deliveryCountry?.label;
+  //   }
+  //   if (deliveryPostcode !== userDetails?.deliveryPostcode) {
+  //     updatedData.deliveryPostcode = deliveryPostcode;
+  //   }
+  //   if (billingAddress1 !== userDetails?.billingAddress1) {
+  //     updatedData.billingAddress1 = billingAddress1;
+  //   }
+  //   if (billingAddress2 !== userDetails?.billingAddress2) {
+  //     updatedData.billingAddress2 = billingAddress2;
+  //   }
+  //   if (billingCity !== userDetails?.billingCity) {
+  //     updatedData.billingCity = billingCity;
+  //   }
+  //   if (billingState !== userDetails?.billingState) {
+  //     updatedData.billingState = billingState;
+  //   }
+  //   if (billingCountry?.label !== userDetails?.billingCountry) {
+  //     updatedData.billingCountry = billingCountry?.label;
+  //   }
+  //   if (billingPostcode !== userDetails?.billingPostcode) {
+  //     updatedData.billingPostcode = billingPostcode;
+  //   }
+  //   console.log('updateData is :',updatedData);
+  //   return updatedData;
+  // };
+const getUpdatedData = () => {
+  const payload = {
+    individual: {
+      address: {}
+    },
+    postal_address: {},
   };
 
-  const updateUser = async () => {
-    const isValid = validateFields({
-      title,
-      firstName,
-      middleName,
-      lastName,
-      gender,
-      dateOfBirth,
-      mobileCountryCode,
-      mobile,
-      nationality,
-      deliveryAddress1,
-      deliveryCity,
-      deliveryState,
-      deliveryCountry,
-      deliveryZipCode,
-      billingAddress1,
-      billingCity,
-      billingState,
-      billingCountry,
-      billingPostcode,
-    });
+  // ✅ Individual Address
+  if (deliveryCity && deliveryCity !== userDetails?.deliveryCity) {
+    payload.individual.address.city = deliveryCity;
+  }
+  if (deliveryCountry?.label && deliveryCountry?.label !== userDetails?.deliveryCountry) {
+    payload.individual.address.country = deliveryCountry.label;
+  }
+  if (deliveryAddress1 && deliveryAddress1 !== userDetails?.deliveryAddress1) {
+    payload.individual.address.line1 = deliveryAddress1;
+  }
+  if (deliveryState && deliveryState !== userDetails?.deliveryState) {
+    payload.individual.address.state = deliveryState;
+  }
+  if (deliveryPostcode && deliveryPostcode !== userDetails?.deliveryPostcode) {
+    payload.individual.address.postcode = deliveryPostcode;
+  }
 
-    console.log(isValid);
+  // ✅ Mobile Number
+  const formattedMobile = `${mobileCountryCode?.value || ''}-${mobile}`;
+  if (mobile && formattedMobile !== userDetails?.mobile_number) {
+    payload.mobile_number = formattedMobile;
+  }
 
-    if (!isValid) return;
+  // ✅ Postal (Billing) Address
+  if (billingCity && billingCity !== userDetails?.billingCity) {
+    payload.postal_address.city = billingCity;
+  }
+  if (billingCountry?.label && billingCountry.label !== userDetails?.billingCountry) {
+    payload.postal_address.country = billingCountry.label;
+  }
+  if (billingAddress1 && billingAddress1 !== userDetails?.billingAddress1) {
+    payload.postal_address.line1 = billingAddress1;
+  }
+  if (billingState && billingState !== userDetails?.billingState) {
+    payload.postal_address.state = billingState;
+  }
+  if (billingPostcode && billingPostcode !== userDetails?.billingPostcode) {
+    payload.postal_address.postcode = billingPostcode;
+  }
 
-    const updatedData = getUpdatedData();
+  // ✅ Audit Fields
+  payload.updated_at = `${Date.now()}`;
+  payload.updated_by = "user";
 
-    try {
-      setSubmitting(true);
+  // ✅ Cleanup Empty Fields
+  if (Object.keys(payload.individual.address).length === 0) delete payload.individual;
+  if (Object.keys(payload.postal_address).length === 0) delete payload.postal_address;
 
-      // Send `updatedData` to the server or API if not empty
-      if (Object.keys(updatedData).length > 0) {
-        await dispatch(updateUserDetails({ body: updatedData }));
-      } else {
-        toast.error(
-          "All fields match the current data. Please make changes to proceed."
-        );
-      }
-    } catch (e) {
-      console.log(e);
-      toast.error("Something went wrong, please try again later!");
-    } finally {
-      setSubmitting(false);
+  console.log("🟡 Final Payload to API:", payload);
+  return payload;
+};
+
+
+
+
+
+ const updateUser = async () => {
+  // ✅ Step 1: Validate all required fields
+  const isValid = validateFields({
+    firstName,
+    middleName,
+    lastName,
+    mobileCountryCode,
+    mobile,
+    deliveryAddress,
+    deliveryCity,
+    deliveryState,
+    deliveryCountry,
+    deliveryPostcode,
+    billingAddress,
+    billingCity,
+    billingState,
+    billingCountry,
+    billingPostcode,
+  });
+
+  console.log("✅ Validation Result:", isValid);
+  if (!isValid) return;
+
+  // ✅ Step 2: Get changed fields only
+  const updatedData = getUpdatedData();
+  console.log("🆕 Updated Data to be sent:", updatedData);
+
+  // ✅ Step 3: Check userDetails and cardholderId
+  console.log("👤 userDetails:", userDetails);
+  console.log("🆔 cardholderId:", userDetails?.id);
+
+  try {
+    setSubmitting(true);
+
+    // ✅ Step 4: Only dispatch if changes exist
+    if (Object.keys(updatedData).length > 0 && userDetails?.id) {
+      console.log("🚀 Dispatching updateUserDetails...");
+
+      await dispatch(updateUserDetails({
+        cardholderId: userDetails.id,
+        body: updatedData,
+      }));
+
+    } else {
+      toast.error(
+        "All fields match the current data. Please make changes to proceed."
+      );
     }
-  };
+  } catch (e) {
+    console.error("❌ Error while updating user:", e);
+    toast.error("Something went wrong, please try again later!");
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   //BAAS
 
@@ -530,7 +601,7 @@ export const Profile = () => {
     deliveryCity,
     deliveryState,
     deliveryCountry,
-    deliveryZipCode,
+    deliveryPostcode,
     billingAddress1,
     billingAddress2,
     billingCity,
@@ -554,7 +625,7 @@ export const Profile = () => {
       { value: deliveryCity, name: "Foundation City" },
       { value: deliveryState, name: "Foundation State" },
       { value: deliveryCountry, name: "Foundation Country" },
-      { value: deliveryZipCode, name: "Foundation Zip Code" },
+      { value: deliveryPostcode, name: "Foundation Zip Code" },
       { value: billingAddress1, name: "Operational Address 1" },
       { value: billingAddress2, name: "Operational Address 2" },
       { value: billingCity, name: "Operational City" },
@@ -631,7 +702,7 @@ export const Profile = () => {
       return false;
     }
 
-    if (!regex.zipCode.pattern.test(deliveryZipCode)) {
+    if (!regex.zipCode.pattern.test(deliveryPostcode)) {
       toast.error(`Foundation Zip Code: ${regex.zipCode.message}`);
       return false;
     }
@@ -723,8 +794,8 @@ export const Profile = () => {
     if (deliveryCountry?.label !== userDetails?.foundationCountry) {
       updatedData.foundationCountry = deliveryCountry?.value;
     }
-    if (deliveryZipCode !== userDetails?.foundationZipcode) {
-      updatedData.foundationZipcode = deliveryZipCode;
+    if (deliveryPostcode !== userDetails?.foundationZipcode) {
+      updatedData.foundationZipcode = deliveryPostcode;
     }
 
     if (billingAddress1 !== userDetails?.operationalAddress1) {
@@ -764,7 +835,7 @@ export const Profile = () => {
       deliveryCity,
       deliveryState,
       deliveryCountry,
-      deliveryZipCode,
+      deliveryPostcode,
       billingAddress1,
       billingAddress2,
       billingCity,
@@ -860,7 +931,7 @@ export const Profile = () => {
                     regex={regex.email}
                   />
 
-                  <CustomSelect
+                  { <CustomSelect
                     disabled={edit}
                     options={titleList}
                     id="title"
@@ -870,7 +941,7 @@ export const Profile = () => {
                     style={{}}
                     label="Title"
                     required
-                  />
+                  /> }
 
                   <CustomInput
                     disabled={edit}
@@ -906,7 +977,7 @@ export const Profile = () => {
                     type={"alpha"}
                   />
 
-                  <CustomSelect
+                  {/* <CustomSelect
                     disabled={edit}
                     options={genderList}
                     id="gender"
@@ -916,15 +987,15 @@ export const Profile = () => {
                     style={{}}
                     label="Gender"
                     required
-                  />
+                  /> */}
 
-                  <CustomDatepicker
+                  {/* <CustomDatepicker
                     selectedDate={dateOfBirth}
                     onDateChange={setDateOfBirth}
                     label="Date of Birth"
                     required
                     disabled={edit}
-                  />
+                  /> */}
 
                   <CustomSelect
                     disabled={edit}
@@ -950,7 +1021,7 @@ export const Profile = () => {
                     regex={regex.phoneNumber}
                   />
 
-                  <CustomSelect
+                  {/* <CustomSelect
                     disabled={edit}
                     options={nationalityList}
                     id="nationality"
@@ -960,7 +1031,7 @@ export const Profile = () => {
                     style={{}}
                     label="Nationality"
                     required
-                  />
+                  /> */}
                 </div>
               </Card>
 
@@ -1020,10 +1091,10 @@ export const Profile = () => {
 
                   <CustomInput
                     disabled={edit}
-                    value={deliveryZipCode}
-                    onInput={setDeliveryZipCode}
+                    value={deliveryPostcode}
+                    onInput={setdeliveryPostcode}
                     leftIcon={<Explore />}
-                    label={"Delivery Zipcode"}
+                    label={"Delivery Postcode"}
                     max={8}
                     required
                     regex={regex.zipCode}
@@ -1105,7 +1176,7 @@ export const Profile = () => {
                     value={billingPostcode}
                     onInput={setbillingPostcode}
                     leftIcon={<Explore />}
-                    label={"Billing Zipcode"}
+                    label={"Billing Postcode"}
                     max={8}
                     required
                     regex={regex.zipCode}
@@ -1354,8 +1425,8 @@ export const Profile = () => {
 
                   <CustomInput
                     disabled={edit}
-                    value={deliveryZipCode}
-                    onInput={setDeliveryZipCode}
+                    value={deliveryPostcode}
+                    onInput={setdeliveryPostcode}
                     leftIcon={<Explore />}
                     label={"Foundation Zipcode"}
                     max={8}
