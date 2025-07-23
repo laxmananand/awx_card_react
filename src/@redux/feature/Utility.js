@@ -50,7 +50,7 @@ export const utilitySlice = createSlice({
       state.headers = action.payload;
     },
     setProgram: (state, action) => {
-      state.program = action.payload;
+      state.program = "SAVAAM0" || action.payload;
     },
     setExpanded: (state, action) => {
       state.isExpanded = action.payload;

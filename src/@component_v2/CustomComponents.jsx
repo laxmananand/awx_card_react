@@ -16,7 +16,17 @@ const animatedComponents = makeAnimated();
 import CryptoJS from "crypto-js";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Spinner, Card, Row, Col } from "react-bootstrap";
-import { IconButton, Tooltip, Zoom } from "@mui/material";
+import {
+  IconButton,
+  Tooltip,
+  Zoom,
+  Drawer,
+  Divider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+} from "@mui/material";
 import {
   AddBox,
   AddCircleOutline,
@@ -27,11 +37,18 @@ import {
   CreditCardOutlined,
   Settings,
   Visibility,
+  Close,
+  VisibilityOff,
+  Block,
+  ReplayCircleFilled,
+  ExpandMore,
 } from "@mui/icons-material";
+import { MoonLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
 import { setActiveTab } from "../@redux/feature/Utility";
 import { getCardsDetailsAPI } from "./../@redux/action/account";
 import restrict from "../components/utility/restrict";
+import CardComponent from "react-credit-cards-2";
 
 export const CustomInput = ({
   type,
@@ -855,6 +872,532 @@ export const detectCardType = (cardNumber) => {
   return "Other";
 };
 
+// export const CreditCardView = ({
+//   item,
+//   dispatch,
+//   handleOpen,
+//   hide = false,
+// }) => {
+//   const [cardType, setCardType] = useState("");
+//   const [cardNumber, setCardNumber] = useState("");
+//   const [holderName, setHolderName] = useState("");
+//   const [expiryDate, setExpiryDate] = useState("");
+//   const [cvv, setCVV] = useState("");
+//   const [isLoading, setLoading] = useState(false);
+//   const [show, setShow] = useState(false);
+
+//   // Extract data directly from the item prop based on the new structure
+//   const {
+//     cardStatus,
+//     maskedCardNumber,
+//     nameOnCard,
+//     cardType: apiCardType, // Renaming to avoid conflict with state variable
+//     currency,
+//     createdAt,
+//   } = item;
+
+//   const cardLogos = {
+//     Mastercard: (
+//       <img
+//         src="/banks/mastercard-logo.png"
+//         alt="Mastercard"
+//         style={{ width: 60 }}
+//       />
+//     ),
+//     Visa: <img src="/banks/visa-logo.png" alt="Visa" style={{ width: 60 }} />,
+//     // Other: (
+//     //   <img src="/banks/matchmove.png" alt="Other Card" style={{ width: 80 }} />
+//     // ),
+//   };
+
+//   const cardCovers = ["/cover/card-cover-1.png"];
+//   const randomImage = cardCovers[Math.floor(Math.random() * cardCovers.length)];
+
+//   const formatCardNumberDisplay = (number) => {
+//     if (!number) return "XXXX XXXX XXXX XXXX";
+//     const lastFour = number.slice(-4);
+//     return `**** **** **** ${lastFour}`;
+//   };
+
+//   const userDetails = useSelector((state) => state.auth.userDetails);
+
+//   useEffect(() => {
+//     if (nameOnCard) {
+//       setHolderName(nameOnCard);
+//     } else if (userDetails) {
+//       setHolderName(
+//         `${userDetails?.firstName} ${userDetails?.middleName || ""} ${
+//           userDetails?.lastName
+//         }`
+//       );
+//     }
+
+//     // Set card type and masked number for display
+//     setCardType(apiCardType === "GPR_PHY" ? "Physical" : "Virtual"); // Determine 'Physical' or 'Virtual' from cardType
+//     setCardNumber(maskedCardNumber);
+
+//     // You'll need to fetch the actual expiry date from the decrypted data when 'show' is true.
+//     // For initial display, we'll leave it as default or infer if possible.
+//     // For now, we'll keep the placeholder "MM/YY"
+//     setExpiryDate("MM/YY");
+//   }, [item, userDetails, nameOnCard, maskedCardNumber, apiCardType, currency]);
+
+//   const showCard = async () => {
+//     if (cardStatus?.toLowerCase() === "active") {
+//       try {
+//         setLoading(true);
+
+//         const cardsData = await dispatch(getCardsDetailsAPI(item.cardHashId));
+
+//         if (cardsData.status === "success") {
+//           let decryptedCardDetails = decryptData(cardsData.data[0]);
+//           const cardDetails = JSON.parse(decryptedCardDetails);
+
+//           if (cardDetails) {
+//             setCardNumber(formatCardNumber(cardDetails.card_number));
+//             setCVV(cardDetails.cvv);
+//             setExpiryDate(
+//               `${cardDetails.month}/${String(cardDetails.year).slice(2)}`
+//             );
+//             setHolderName(
+//               nameOnCard ||
+//                 `${userDetails?.firstName} ${userDetails?.middleName || ""} ${
+//                   userDetails?.lastName
+//                 }`
+//             );
+//             setCardType(detectCardType(cardDetails.card_number));
+//             setShow(true);
+//           }
+//         } else {
+//           toast.error(cardsData.message);
+//         }
+//       } catch (error) {
+//         console.error("Error showing card details:", error);
+//         toast.error("Failed to retrieve card details.");
+//       } finally {
+//         setLoading(false);
+//       }
+//     } else {
+//       toast.error(
+//         "Card details not available for suspended or locked cards. Please activate your card to see its details."
+//       );
+//     }
+//   };
+
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     if (show) {
+//       const timer = setTimeout(() => setShow(false), 5000); // Reverts after 5s
+//       return () => clearTimeout(timer); // Cleanup on re-renders
+//     }
+//   }, [show]);
+
+//   return (
+//     <>
+//       {isLoading ? (
+//         <Card
+//           style={{
+//             backgroundImage: `url(${randomImage})`,
+//             backgroundSize: "cover",
+//             borderRadius: "8px",
+//             height: "200px",
+//             width: "325px",
+//             justifyContent: "center",
+//             alignItems: "center",
+//             display: "flex",
+//             color: "white",
+//           }}
+//         >
+//           <Spinner
+//             animation="border"
+//             role="status"
+//             variant="light"
+//             size="small"
+//           />
+//           <label style={{ marginTop: "20px", fontSize: 12 }}>
+//             Fetching your card details, please wait...
+//           </label>
+//         </Card>
+//       ) : (
+//         <div className="d-flex justify-content-start align-items-start">
+//           {!item ? (
+//             <Card
+//               style={{
+//                 background: `linear-gradient(90deg, lightgrey, white)`,
+//                 borderRadius: "8px",
+//                 border: "2px solid rgba(0,0,0,0.45)",
+//                 borderStyle: "dashed",
+//                 height: "200px",
+//                 width: "325px",
+//                 padding: "1.5rem",
+//                 color: "black",
+//                 justifyContent: "space-between",
+//               }}
+//             >
+//               <div
+//                 className="d-flex align-items-center justify-content-center mx-auto my-auto gap-2 flex-column"
+//                 onClick={() => {
+//                   dispatch(setActiveTab("Cards"));
+//                   navigate("/cards");
+//                 }}
+//               >
+//                 <AddCircleOutline className="fs-2" />
+//                 <label htmlFor="" className="fs-7">
+//                   Add Your First Card
+//                 </label>
+//               </div>
+//             </Card>
+//           ) : (
+//             <Card
+//               style={{
+//                 backgroundImage: `url(${randomImage})`,
+//                 backgroundSize: "cover",
+//                 borderRadius: "8px",
+//                 height: "200px",
+//                 width: "325px",
+//                 padding: "0.5rem",
+//                 color: "white",
+//                 justifyContent: "space-between",
+//               }}
+//             >
+//               <div className="d-flex align-items-center justify-content-between">
+//                 {!show ? (
+//                   <>
+//                     <div className="d-flex">
+//                       <p
+//                         className="pb-0 mb-0 text-white text-lowercase"
+//                         style={{
+//                           transform: "rotate(-90deg)",
+//                           position: "absolute",
+//                           left: "-8px",
+//                           top: "35px",
+//                         }}
+//                       >
+//                         {apiCardType === "GPR_PHY" ? "PHYSICAL" : "VIRTUAL"}
+//                       </p>
+//                       <div
+//                         className="d-flex flex-column gap-3 justify-content-between"
+//                         style={{
+//                           position: "absolute",
+//                           top: "-2px",
+//                           left: "40px",
+//                         }}
+//                       >
+//                         <img
+//                           src="/cover/contactless.png"
+//                           alt="Contactless"
+//                           width={50}
+//                           style={{ transform: "rotate(-90deg)" }}
+//                         />
+//                         <img
+//                           src="/cover/chip.png"
+//                           alt="Chip"
+//                           width={60}
+//                           style={{ transform: "rotate(90deg)" }}
+//                         />
+
+//                         <div className="dots-container" style={{ gap: 5 }}>
+//                           <div
+//                             className="d-flex flex-column"
+//                             style={{ gap: 5, marginTop: 7 }}
+//                           >
+//                             <div className="dot"></div>
+//                             <div className="dot"></div>
+//                           </div>
+//                           <div
+//                             className="d-flex flex-column"
+//                             style={{ gap: 5 }}
+//                           >
+//                             <div className="dot"></div>
+//                             <div className="dot"></div>
+//                           </div>
+//                         </div>
+//                       </div>
+//                     </div>
+//                     <div
+//                       className="d-flex align-items-center"
+//                       style={{ position: "absolute", left: "140px" }}
+//                     >
+//                       <div
+//                         style={{
+//                           backgroundColor:
+//                             cardStatus?.toLowerCase() === "active"
+//                               ? "green"
+//                               : cardStatus?.toLowerCase() === "suspended"
+//                               ? "red"
+//                               : "yellow",
+//                           borderRadius: "50%",
+//                           width: "8px",
+//                           height: "8px",
+//                           marginRight: "6px",
+//                         }}
+//                       ></div>
+//                       <span style={{ fontWeight: "600", fontSize: 10 }}>
+//                         {cardStatus?.toUpperCase()}
+//                       </span>
+//                     </div>
+//                     <div style={{ transform: "rotate(-90deg)" }}>
+//                       {cardLogos[detectCardType(maskedCardNumber)] ||
+//                         cardLogos["Other"]}
+//                     </div>
+//                   </>
+//                 ) : (
+//                   <>
+//                     <div className="d-flex align-items-center justify-content-between w-100">
+//                       <div className="d-flex align-items-center">
+//                         <img
+//                           src="/auth/logo-white.png"
+//                           alt="Stylopay Logo"
+//                           width={30}
+//                           height={30}
+//                         />
+//                         <p className="pb-0 mb-0 fw-600 fs-9 text-white">
+//                           Stylopay
+//                         </p>
+//                       </div>
+//                       {/* <img
+//                         src="/banks/matchmove.png"
+//                         alt="Matchmove Logo"
+//                         width={100}
+//                       /> */}
+//                     </div>
+//                   </>
+//                 )}
+//               </div>
+
+//               {/* <div
+//                 style={{
+//                   fontSize: "22px",
+//                   textAlign: "center",
+//                 }}
+//               >
+//                 {!show
+//                   ? formatCardNumberDisplay(maskedCardNumber)
+//                   : cardNumber || "XXXX XXXX XXXX XXXX"}
+//               </div> */}
+
+//               <div
+//                 className={`d-flex align-items-center justify-content-${
+//                   !show ? "end me-3" : "center"
+//                 } gap-5 mb-2`}
+//               >
+//                 {!show ? (
+//                   <>
+//                     <div>
+//                       <label className="fs-9">Card Type</label>
+//                       <div style={{ fontWeight: "600", fontSize: 12 }}>
+//                         {apiCardType === "GPR_PHY" ? "PHYSICAL" : "VIRTUAL"}
+//                       </div>
+//                     </div>
+//                     <div>
+//                       <label className="fs-9">Last 4 Digits</label>
+//                       <div style={{ fontWeight: "600", fontSize: 12 }}>
+//                         {maskedCardNumber ? maskedCardNumber.slice(-4) : "****"}{" "}
+//                       </div>
+//                     </div>
+//                   </>
+//                 ) : (
+//                   <>
+//                     <div>
+//                       <div className="fs-9">Card Holder</div>
+//                       <div style={{ fontWeight: "600", fontSize: 12 }}>
+//                         {holderName || "John Doe"}
+//                       </div>
+//                     </div>
+//                     <div>
+//                       <div className="fs-9">Valid Thru</div>
+//                       <div style={{ fontWeight: "600", fontSize: 12 }}>
+//                         {expiryDate || "MM/YY"}
+//                       </div>
+//                     </div>
+//                     <div className="fs-9">
+//                       <div>CVV</div>
+//                       <div style={{ fontWeight: "600", fontSize: 12 }}>
+//                         {cvv || "***"}
+//                       </div>
+//                     </div>
+//                   </>
+//                 )}
+//               </div>
+//             </Card>
+//           )}
+
+//           <div className="d-flex flex-column justify-content-center align-items-center ms-2 gap-2">
+//             {location.pathname === "/cards" && !hide && (
+//               <div className="border rounded-pill bg-white">
+//                 <Tooltip
+//                   title="Card Settings"
+//                   slotProps={{
+//                     popper: {
+//                       modifiers: [
+//                         {
+//                           name: "offset",
+//                           options: {
+//                             offset: [0, -14],
+//                           },
+//                         },
+//                       ],
+//                     },
+//                   }}
+//                   PopperProps={{
+//                     modifiers: [
+//                       {
+//                         name: "preventOverflow",
+//                         options: {
+//                           boundary: "window",
+//                         },
+//                       },
+//                     ],
+//                   }}
+//                   componentsProps={{
+//                     tooltip: {
+//                       sx: {
+//                         fontFamily: "Poppins",
+//                         fontSize: 12,
+//                         backgroundColor: "black",
+//                         color: "white",
+//                         padding: "6px 12px",
+//                       },
+//                     },
+//                   }}
+//                   slots={{
+//                     transition: Zoom,
+//                   }}
+//                 >
+//                   <IconButton onClick={handleOpen}>
+//                     <Settings className="text-dark" fontSize="small" />
+//                   </IconButton>
+//                 </Tooltip>
+//               </div>
+//             )}
+//             {item.cardType !== "virtual" && // Condition updated
+//               location.pathname === "/cards" &&
+//               !hide && (
+//                 <div className="border rounded-pill bg-white">
+//                   <Tooltip
+//                     title="View Card Details"
+//                     slotProps={{
+//                       popper: {
+//                         modifiers: [
+//                           {
+//                             name: "offset",
+//                             options: {
+//                               offset: [0, -14],
+//                             },
+//                           },
+//                         ],
+//                       },
+//                     }}
+//                     PopperProps={{
+//                       modifiers: [
+//                         {
+//                           name: "preventOverflow",
+//                           options: {
+//                             boundary: "window",
+//                           },
+//                         },
+//                       ],
+//                     }}
+//                     componentsProps={{
+//                       tooltip: {
+//                         sx: {
+//                           fontFamily: "Poppins",
+//                           fontSize: 12,
+//                           backgroundColor: "black",
+//                           color: "white",
+//                           padding: "6px 12px",
+//                         },
+//                       },
+//                     }}
+//                     slots={{
+//                       transition: Zoom,
+//                     }}
+//                   >
+//                     <IconButton variant="outline-light" onClick={showCard}>
+//                       <Visibility className="text-dark" fontSize="small" />
+//                     </IconButton>
+//                   </Tooltip>
+//                 </div>
+//               )}
+//           </div>
+//         </div>
+//       )}
+//     </>
+//   );
+// };
+export const CardDetails = ({ data }) => {
+  const fields = [
+    { label: "Purpose", value: data.purpose },
+    { label: "Nick Name", value: data.nick_name },
+    { label: "Brand", value: data.brand },
+    { label: "Form Factor", value: data.form_factor },
+    { label: "Created By", value: data.created_by },
+    { label: "Program Type", value: data.program?.type },
+    { label: "Program Purpose", value: data.program?.purpose },
+    { label: "Name on Card", value: data.name_on_card },
+    {
+      label: "Transaction Currency",
+      value: data.authorization_controls?.transaction_limits?.currency,
+    },
+  ];
+
+  const limits = data.authorization_controls?.transaction_limits?.limits || [];
+
+  return (
+    <div>
+      {fields.map(
+        (item, idx) =>
+          item.value && (
+            <div
+              key={idx}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "10px",
+                borderBottom: "1px solid #ccc",
+                paddingBottom: "5px",
+              }}
+            >
+              <label className="fs-8 text-dark text-start fw-bold">
+                {item.label} :
+              </label>
+              <label className="fs-8 text-secondary text-end">
+                {item.value}
+              </label>
+            </div>
+          )
+      )}
+
+      {limits.length > 0 && (
+        <div style={{ marginTop: "20px" }}>
+          <h5 className="text-dark fw-bold mb-2">Transaction Limits:</h5>
+          {limits.map((limit, index) => (
+            <div
+              key={index}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "8px",
+                paddingBottom: "4px",
+                borderBottom: "1px dashed #aaa",
+              }}
+            >
+              <label className="fs-8 text-dark fw-bold">
+                {limit.interval.replace("_", " ")} Limit
+              </label>
+              <label className="fs-8 text-secondary">
+                {limit.amount.toLocaleString()}
+                {data.authorization_controls?.transaction_limits?.currency}{" "}
+              </label>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const CreditCardView = ({
   item,
   dispatch,
@@ -868,6 +1411,21 @@ export const CreditCardView = ({
   const [cvv, setCVV] = useState("");
   const [isLoading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+
+  // NEW: Drawer related states
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const [cardDetailsLoading, setCardDetailsLoading] = useState(false);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false);
+  const [activeCard, setActiveCard] = useState(null);
+  const [activeCardDetails, setActiveCardDetails] = useState(null);
+  const [hash, setHash] = useState("");
+  const [state, setState] = useState({
+    number: "",
+    expiry: "",
+    cvc: "",
+    name: "",
+    focus: "",
+  });
 
   // Extract data directly from the item prop based on the new structure
   const {
@@ -925,47 +1483,426 @@ export const CreditCardView = ({
     setExpiryDate("MM/YY");
   }, [item, userDetails, nameOnCard, maskedCardNumber, apiCardType, currency]);
 
-  const showCard = async () => {
-    if (cardStatus?.toLowerCase() === "active") {
-      try {
-        setLoading(true);
+  // UPDATED: showCard function now opens the drawer
+  const showCard = () => {
+    setActiveCard(item); // Set the current card as active
+    setOpenDrawer(true); // Open the drawer
+  };
 
-        const cardsData = await dispatch(getCardsDetailsAPI(item.cardHashId));
+  // NEW: Drawer handler functions
+  const handleCloseDrawer = () => {
+    setOpenDrawer(false);
+    // Reset states when closing
+    setState({
+      number: "",
+      expiry: "",
+      cvc: "",
+      name: "",
+      focus: "",
+    });
+    setActiveCardDetails(null);
+    setHash("");
+  };
+
+  const handleFetchCardDetails = async () => {
+    if (activeCard) {
+      try {
+        setCardDetailsLoading(true);
+
+        const cardsData = await dispatch(
+          getCardsDetailsAPI(activeCard.cardHashId)
+        );
 
         if (cardsData.status === "success") {
           let decryptedCardDetails = decryptData(cardsData.data[0]);
           const cardDetails = JSON.parse(decryptedCardDetails);
 
           if (cardDetails) {
-            setCardNumber(formatCardNumber(cardDetails.card_number));
-            setCVV(cardDetails.cvv);
-            setExpiryDate(
-              `${cardDetails.month}/${String(cardDetails.year).slice(2)}`
-            );
-            setHolderName(
-              nameOnCard ||
+            setState({
+              number: formatCardNumber(cardDetails.card_number),
+              expiry: `${cardDetails.month}/${String(cardDetails.year).slice(
+                2
+              )}`,
+              cvc: cardDetails.cvv,
+              name:
+                nameOnCard ||
                 `${userDetails?.firstName} ${userDetails?.middleName || ""} ${
                   userDetails?.lastName
-                }`
-            );
-            setCardType(detectCardType(cardDetails.card_number));
-            setShow(true);
+                }`,
+              focus: "",
+            });
           }
         } else {
           toast.error(cardsData.message);
         }
       } catch (error) {
-        console.error("Error showing card details:", error);
+        console.error("Error fetching card details:", error);
         toast.error("Failed to retrieve card details.");
       } finally {
-        setLoading(false);
+        setCardDetailsLoading(false);
       }
-    } else {
-      toast.error(
-        "Card details not available for suspended or locked cards. Please activate your card to see its details."
-      );
     }
   };
+
+  const handleCardUpdate = async (updateData) => {
+    try {
+      // Add your card update API call here
+      const response = await dispatch(
+        updateCardAPI(activeCard.cardHashId, updateData)
+      );
+
+      if (response.status === "success") {
+        toast.success("Card status updated successfully");
+        setActiveCard({ ...activeCard, card_status: updateData.card_status });
+        // Refresh your cards list if needed
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      console.error("Error updating card:", error);
+      toast.error("Failed to update card status.");
+    }
+  };
+
+  const handleAccordionChange = (event, isExpanded) => {
+    setIsAccordionOpen(isExpanded);
+    if (isExpanded && !activeCardDetails) {
+      // Fetch card details for accordion if not already loaded
+      fetchCardDetailsForAccordion();
+    }
+  };
+
+  const fetchCardDetailsForAccordion = async () => {
+    try {
+      // Add your API call to fetch detailed card information
+      const response = await dispatch(
+        getCardsDetailsAPI(activeCard.cardHashId)
+      );
+      if (response.status === "success") {
+        setActiveCardDetails(response.data[0]);
+      }
+    } catch (error) {
+      console.error("Error fetching detailed card info:", error);
+    }
+  };
+
+  // NEW: Drawer Component
+  const DrawerComponent = () => (
+    <Drawer open={openDrawer} onClose={handleCloseDrawer} anchor="right">
+      <div className="p-4" style={{ width: 500 }}>
+        <div className="d-flex justify-content-between w-100 align-items-center pb-3 border-bottom mb-4">
+          <label htmlFor="">Card details</label>
+          <Close onClick={handleCloseDrawer} color="secondary" />
+        </div>
+
+        <Card className="bg-light border p-4">
+          <h5 className="mb-0 d-flex align-items-center fw-600">
+            Card Ending With: {activeCard?.maskedCardNumber?.slice(-4)}
+            <label
+              htmlFor=""
+              className={`${
+                activeCard?.cardStatus === "ACTIVE"
+                  ? "bg-success text-white"
+                  : activeCard?.cardStatus === "INACTIVE"
+                  ? "bg-secondary text-white"
+                  : activeCard?.cardStatus === "PENDING"
+                  ? "bg-warning text-dark"
+                  : "bg-danger text-white"
+              } px-2 py-1 border-0 rounded-pill text-center fw-500 ms-2`}
+              style={{ fontSize: 10 }}
+            >
+              {activeCard?.cardStatus}
+            </label>
+          </h5>
+
+          <Divider className="w-100 my-3" />
+
+          <div className="d-flex justify-content-between align-items-start">
+            {cardDetailsLoading ? (
+              <div
+                style={{
+                  width: 345,
+                  height: 200,
+                  background: "linear-gradient(45deg, lightgrey, white)",
+                  borderRadius: 14.5,
+                  border: "2px solid lightgrey",
+                }}
+                className="d-flex flex-column justify-content-center align-items-center gap-3"
+              >
+                <MoonLoader size={45} />
+                <label htmlFor="" className="fs-8 text-secondary fw-600">
+                  Loading your card details...
+                </label>
+              </div>
+            ) : (
+              <CardComponent
+                number={state.number}
+                expiry={state.expiry}
+                cvc={state.cvc}
+                name={state.name}
+                focused={state.focus}
+              />
+            )}
+
+            <div className="d-flex flex-column justify-content-start align-items-start gap-3">
+              {state.number ? (
+                <Tooltip
+                  title="Hide Card Details"
+                  slotProps={{
+                    popper: {
+                      modifiers: [
+                        {
+                          name: "offset",
+                          options: {
+                            offset: [0, -14],
+                          },
+                        },
+                      ],
+                    },
+                  }}
+                  PopperProps={{
+                    modifiers: [
+                      {
+                        name: "preventOverflow",
+                        options: {
+                          boundary: "window",
+                        },
+                      },
+                    ],
+                  }}
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        fontFamily: "inherit",
+                        fontSize: 12,
+                        backgroundColor: "black",
+                        color: "white",
+                        padding: "6px 12px",
+                      },
+                    },
+                  }}
+                  slots={{
+                    transition: Zoom,
+                  }}
+                >
+                  <IconButton
+                    variant="outline-light"
+                    onClick={() =>
+                      setState({
+                        number: "",
+                        expiry: "",
+                        cvc: "",
+                        name: "",
+                        focus: "",
+                      })
+                    }
+                    className="rounded-circle p-2 bg-white border-secondary border cursor-pointer"
+                  >
+                    <VisibilityOff className="text-dark" fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              ) : (
+                <Tooltip
+                  title="View Card Details"
+                  slotProps={{
+                    popper: {
+                      modifiers: [
+                        {
+                          name: "offset",
+                          options: {
+                            offset: [0, -14],
+                          },
+                        },
+                      ],
+                    },
+                  }}
+                  PopperProps={{
+                    modifiers: [
+                      {
+                        name: "preventOverflow",
+                        options: {
+                          boundary: "window",
+                        },
+                      },
+                    ],
+                  }}
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        fontFamily: "inherit",
+                        fontSize: 12,
+                        backgroundColor: "black",
+                        color: "white",
+                        padding: "6px 12px",
+                      },
+                    },
+                  }}
+                  slots={{
+                    transition: Zoom,
+                  }}
+                >
+                  <IconButton
+                    variant="outline-light"
+                    onClick={handleFetchCardDetails}
+                    className="rounded-circle p-2 bg-white border-secondary border cursor-pointer"
+                  >
+                    <Visibility className="text-dark" fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+
+              {activeCard?.cardStatus === "ACTIVE" ? (
+                <Tooltip
+                  title="Block Card"
+                  slotProps={{
+                    popper: {
+                      modifiers: [
+                        {
+                          name: "offset",
+                          options: {
+                            offset: [0, -14],
+                          },
+                        },
+                      ],
+                    },
+                  }}
+                  PopperProps={{
+                    modifiers: [
+                      {
+                        name: "preventOverflow",
+                        options: {
+                          boundary: "window",
+                        },
+                      },
+                    ],
+                  }}
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        fontFamily: "inherit",
+                        fontSize: 12,
+                        backgroundColor: "black",
+                        color: "white",
+                        padding: "6px 12px",
+                      },
+                    },
+                  }}
+                  slots={{
+                    transition: Zoom,
+                  }}
+                >
+                  <IconButton
+                    variant="outline-light"
+                    onClick={() =>
+                      handleCardUpdate({ card_status: "INACTIVE" })
+                    }
+                    className="rounded-circle bg-white border-danger border cursor-pointer"
+                  >
+                    <Block className="text-danger" fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              ) : activeCard?.cardStatus === "INACTIVE" ? (
+                <Tooltip
+                  title="Unblock Card"
+                  slotProps={{
+                    popper: {
+                      modifiers: [
+                        {
+                          name: "offset",
+                          options: {
+                            offset: [0, -14],
+                          },
+                        },
+                      ],
+                    },
+                  }}
+                  PopperProps={{
+                    modifiers: [
+                      {
+                        name: "preventOverflow",
+                        options: {
+                          boundary: "window",
+                        },
+                      },
+                    ],
+                  }}
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        fontFamily: "inherit",
+                        fontSize: 12,
+                        backgroundColor: "black",
+                        color: "white",
+                        padding: "6px 12px",
+                      },
+                    },
+                  }}
+                  slots={{
+                    transition: Zoom,
+                  }}
+                >
+                  <IconButton
+                    variant="outline-light"
+                    onClick={() => handleCardUpdate({ card_status: "ACTIVE" })}
+                    className="rounded-circle bg-white border-success border cursor-pointer"
+                  >
+                    <ReplayCircleFilled
+                      className="text-success"
+                      fontSize="small"
+                    />
+                  </IconButton>
+                </Tooltip>
+              ) : (
+                <></>
+              )}
+            </div>
+          </div>
+
+          {hash && (
+            <iframe
+              src={`https://demo.airwallex.com/issuing/pci/v2/${activeCard?.card_id}/pin#${hash}`}
+              style={{ height: "225px", width: "100%" }}
+            />
+          )}
+
+          <Accordion
+            className="mt-4 bg-light border rounded-4 border-light border-2 box-shadow text-dark"
+            expanded={isAccordionOpen}
+            onChange={handleAccordionChange}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMore className="text-dark" />}
+              aria-controls="panel1-content"
+              id="panel1-header"
+            >
+              <Typography
+                component="span"
+                sx={{
+                  fontFamily: "inherit",
+                  fontSize: 15,
+                  fontWeight: 600,
+                }}
+              >
+                View Card Information
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {activeCardDetails ? (
+                <CardDetails data={activeCardDetails} />
+              ) : (
+                <div className="d-flex flex-column justify-content-center align-items-center gap-3 my-5">
+                  <MoonLoader size={45} />
+                  <label htmlFor="" className="fs-8 text-secondary fw-600">
+                    Loading your card details...
+                  </label>
+                </div>
+              )}
+            </AccordionDetails>
+          </Accordion>
+        </Card>
+      </div>
+    </Drawer>
+  );
 
   const navigate = useNavigate();
 
@@ -1149,7 +2086,7 @@ export const CreditCardView = ({
                 )}
               </div>
 
-              <div
+              {/* <div
                 style={{
                   fontSize: "22px",
                   textAlign: "center",
@@ -1158,7 +2095,7 @@ export const CreditCardView = ({
                 {!show
                   ? formatCardNumberDisplay(maskedCardNumber)
                   : cardNumber || "XXXX XXXX XXXX XXXX"}
-              </div>
+              </div> */}
 
               <div
                 className={`d-flex align-items-center justify-content-${
@@ -1306,6 +2243,9 @@ export const CreditCardView = ({
           </div>
         </div>
       )}
+
+      {/* NEW: Add the Drawer Component */}
+      <DrawerComponent />
     </>
   );
 };
