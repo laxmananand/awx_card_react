@@ -522,54 +522,56 @@ export const fetchKyb = (userId, type) => async (dispatch, getState) => {
 
 // Update cardholder details using AWX API
 
-
 export const updateUserDetails = ({ cardholderId, body }) => async (dispatch, getState) => {
-  const userDetails = getState().auth.userDetails;
-
+  console.log('preeti 1')
+  const userDetails = getState()?.auth?.userDetails;
+  console.log("preeti 2 userDetails #",userDetails)
+  console.log("preeti", cardholderId)
   if (!cardholderId) {
-    console.error("❌ cardholderId is missing. Cannot proceed with update.");
-    toast.error("Cardholder ID is missing. Please try again.");
+    console.error("❌ cardholderId is missing.");
+    toast.error("Cardholder ID is missing.");
     return;
   }
-
+ 
   if (!body || Object.keys(body).length === 0) {
-    console.warn("⚠️ No changes found to update.");
-    toast.error("No changes found. Please update at least one field.");
+    console.warn("⚠️ No updated fields.");
+    toast.error("Please change at least one field.");
     return;
   }
-
+ 
   const url = `${process.env.VITE_API_ZOOQ}/expense/updateCardHolder_AWX?id=${cardholderId}`;
-
-  console.log("📤 Sending PATCH request to:", url);
-  console.log("📦 Payload being sent:", JSON.stringify(body, null, 2));
-
+ 
+  console.log("📤 PATCH URL:", url);
+  console.log("📦 Payload:", JSON.stringify(body, null, 2));
+ 
   try {
     const response = await axiosInstance.patch(url, body, {
       headers: {
-        "x-user-id": userDetails.id,
+        "x-user-id": "acct_ot2tV8ecOZij3EMn9Ksuzg" || "",
         "x-request-id": crypto.randomUUID(),
         "Content-Type": "application/json",
       },
     });
-
+    console.log('preei res ',response.data);
     if (response.status === 200) {
-      toast.success("Cardholder details updated successfully.");
-      console.log("✅ Update successful:", response.data);
-
-      await dispatch(fetchUser(cardholderId)); // Refresh user info
+      toast.success("Cardholder updated successfully.");
+      console.log("✅ Update Response:", response.data);
+ 
+      await dispatch(fetchUser(cardholderId)); // Refresh data
+ 
       return { status: "SUCCESS", data: response.data };
     } else {
-      console.warn("⚠️ Update failed with message:", response.data.message);
-      toast.error(response.data.message || "Update failed.");
-      return { status: "ERROR", message: response.data.message || "Update failed." };
+      toast.error(response.data?.message || "Update failed.");
+      return { status: "ERROR", message: response.data?.message || "Update failed." };
     }
   } catch (error) {
-    console.error("❌ API update failed:", error);
-    toast.error("Something went wrong during update.");
+    console.error("❌ Update failed:", error);
+    toast.error("Something went wrong while updating.");
     return handleApiError(error);
   }
 };
-
+ 
+ 
 
 
 
