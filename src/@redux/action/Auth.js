@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import { resetAccountStates } from "../feature/account";
 import { resetUtilityStates } from "../feature/Utility";
 import axiosInstance from "./../axiosInstance";
+import { AuthUser } from "../../../../awx_card_node/src/Controllers/UtilityController";
 
 // Helper to handle API errors
 const handleApiError = (error) => {
@@ -393,11 +394,14 @@ export const logout =
 
 export const fetchUser = (cardholderId) => async (dispatch, getState) => {
   try {
+    const xuserid=AuthUser.xuserid
     const url = `${process.env.VITE_API_ZOOQ}/awx/fetch-cardholder-details-awx?id=${cardholderId}`;
     console.log("👉 Fetch Cardholder URL:", url);
     console.log("📌 cardholderId:", cardholderId);
-
-    const response = await axiosInstance.get(url);
+    const headers={
+      "x-user-id":`${xuserid}`
+    }
+    const response = await axiosInstance.get(url,{headers});
 
     const data = response.data?.data?.[0];
 
@@ -532,8 +536,8 @@ export const fetchKyb = (userId, type) => async (dispatch, getState) => {
 export const updateUserDetails = ({ cardholderId, body }) => async (dispatch, getState) => {
   console.log('preeti 1')
   const userDetails = getState()?.auth?.userDetails;
-  const userId=useSelector((state)=>state.auth.userId);
-  console.log(userId);
+  // const userId=useSelector((state)=>state.auth.user.userId);
+  // console.log(userId);
   console.log("preeti 2 userDetails #",userDetails)
   console.log("preeti", cardholderId)
   if (!cardholderId) {
@@ -556,7 +560,7 @@ export const updateUserDetails = ({ cardholderId, body }) => async (dispatch, ge
   try {
     const response = await axiosInstance.patch(url, body, {
       headers: {
-        "x-user-id": userId,
+        "x-user-id": AuthUser.xuserid ,
         // "x-request-id": crypto.randomUUID(),
         // "Content-Type": "application/json",
       },
