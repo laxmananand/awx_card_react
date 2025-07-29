@@ -48,7 +48,11 @@ import { useNavigate } from "react-router-dom";
 import { setActiveTab } from "../@redux/feature/Utility";
 import { getCardsDetailsAPI } from "./../@redux/action/account";
 import restrict from "../components/utility/restrict";
+// import CardComponent from "react-credit-cards-2";
 import CardComponent from "react-credit-cards-2";
+import "react-credit-cards-2/dist/es/styles-compiled.css";
+import { updateCardAPI } from "./../@redux/action/account";
+import { getCardsAPI } from "../@redux/action/account";
 
 export const CustomInput = ({
   type,
@@ -833,7 +837,7 @@ export const getDates = (days = 30) => {
   };
 };
 //laxman
-export const detectCardType = (cardNumber) => {
+export const detectcard_type = (cardNumber) => {
   const cardPatterns = [
     {
       type: "Visa",
@@ -1330,15 +1334,41 @@ export const CardDetails = ({ data }) => {
   const fields = [
     { label: "Purpose", value: data.purpose },
     { label: "Nick Name", value: data.nick_name },
-    { label: "Brand", value: data.brand },
-    { label: "Form Factor", value: data.form_factor },
-    { label: "Created By", value: data.created_by },
+    // { label: "Brand", value: data.brand },
+    // { label: "Form Factor", value: data.form_factor },
+    // { label: "Created By", value: data.created_by },
     { label: "Program Type", value: data.program?.type },
     { label: "Program Purpose", value: data.program?.purpose },
     { label: "Name on Card", value: data.name_on_card },
+    { label: "Card Type", value: data.card_type },
+    { label: "Masked Card Number", value: data.card_number },
+    { label: "Card Status", value: data.card_status },
+    {
+      label: "Created At",
+      value: new Date(data.created_at).toLocaleDateString(),
+    },
+    { label: "Card Hash ID", value: data.card_hash_id },
     {
       label: "Transaction Currency",
       value: data.authorization_controls?.transaction_limits?.currency,
+    },
+    // 💡 Delivery Details
+    { label: "Delivery Mode", value: data.delivery_details?.delivery_mode },
+    { label: "Delivery Vendor", value: data.delivery_details?.delivery_vendor },
+    { label: "Delivery Status", value: data.delivery_details?.status },
+    {
+      label: "Tracking Number",
+      value: data.delivery_details?.tracking_number,
+    },
+    {
+      label: "Tracking Link",
+      value: data.delivery_details?.tracking_link,
+    },
+    {
+      label: "Delivery Updated At",
+      value: data.delivery_details?.updated_at
+        ? new Date(data.delivery_details.updated_at).toLocaleDateString()
+        : null,
     },
   ];
 
@@ -1404,7 +1434,7 @@ export const CreditCardView = ({
   handleOpen,
   hide = false,
 }) => {
-  const [cardType, setCardType] = useState("");
+  const [card_type, setcard_type] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [holderName, setHolderName] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
@@ -1429,12 +1459,12 @@ export const CreditCardView = ({
 
   // Extract data directly from the item prop based on the new structure
   const {
-    cardStatus,
-    maskedCardNumber,
-    nameOnCard,
-    cardType: apiCardType, // Renaming to avoid conflict with state variable
+    card_status,
+    masked_card_number,
+    name_on_card,
+    card_type: apicard_type, // Renaming to avoid conflict with state variable
     currency,
-    createdAt,
+    created_at,
   } = item;
 
   const cardLogos = {
@@ -1461,10 +1491,12 @@ export const CreditCardView = ({
   };
 
   const userDetails = useSelector((state) => state.auth.userDetails);
+  const userId = useSelector((state) => state.auth.user.userId);
+  const cardholder_id = useSelector((state) => state.auth.user.cardholder_id);
 
   useEffect(() => {
-    if (nameOnCard) {
-      setHolderName(nameOnCard);
+    if (name_on_card) {
+      setHolderName(name_on_card);
     } else if (userDetails) {
       setHolderName(
         `${userDetails?.firstName} ${userDetails?.middleName || ""} ${
@@ -1474,14 +1506,21 @@ export const CreditCardView = ({
     }
 
     // Set card type and masked number for display
-    setCardType(apiCardType === "GPR_PHY" ? "Physical" : "Virtual"); // Determine 'Physical' or 'Virtual' from cardType
-    setCardNumber(maskedCardNumber);
+    setcard_type(apicard_type === "GPR_PHY" ? "Physical" : "Virtual"); // Determine 'Physical' or 'Virtual' from card_type
+    setCardNumber(masked_card_number);
 
     // You'll need to fetch the actual expiry date from the decrypted data when 'show' is true.
     // For initial display, we'll leave it as default or infer if possible.
     // For now, we'll keep the placeholder "MM/YY"
     setExpiryDate("MM/YY");
-  }, [item, userDetails, nameOnCard, maskedCardNumber, apiCardType, currency]);
+  }, [
+    item,
+    userDetails,
+    name_on_card,
+    masked_card_number,
+    apicard_type,
+    currency,
+  ]);
 
   // UPDATED: showCard function now opens the drawer
   const showCard = () => {
@@ -1510,7 +1549,7 @@ export const CreditCardView = ({
         setCardDetailsLoading(true);
 
         const cardsData = await dispatch(
-          getCardsDetailsAPI(activeCard.cardHashId)
+          getCardsDetailsAPI(activeCard.card_hash_id)
         );
 
         if (cardsData.status === "success") {
@@ -1525,7 +1564,7 @@ export const CreditCardView = ({
               )}`,
               cvc: cardDetails.cvv,
               name:
-                nameOnCard ||
+                name_on_card ||
                 `${userDetails?.firstName} ${userDetails?.middleName || ""} ${
                   userDetails?.lastName
                 }`,
@@ -1547,20 +1586,27 @@ export const CreditCardView = ({
   const handleCardUpdate = async (updateData) => {
     try {
       // Add your card update API call here
+      console.log("Updating card:", updateData);
+
       const response = await dispatch(
-        updateCardAPI(activeCard.cardHashId, updateData)
+        updateCardAPI({
+          cardId: activeCard.card_hash_id,
+          updatedData: updateData,
+          setCardLoading: setLoading,
+        })
       );
 
       if (response.status === "success") {
         toast.success("Card status updated successfully");
         setActiveCard({ ...activeCard, card_status: updateData.card_status });
         // Refresh your cards list if needed
+        await dispatch(getCardsAPI(userId, cardholder_id, "update"));
       } else {
         toast.error(response.message);
       }
     } catch (error) {
       console.error("Error updating card:", error);
-      toast.error("Failed to update card status.");
+      toast.error("Failed to update card Laxman.");
     }
   };
 
@@ -1576,7 +1622,7 @@ export const CreditCardView = ({
     try {
       // Add your API call to fetch detailed card information
       const response = await dispatch(
-        getCardsDetailsAPI(activeCard.cardHashId)
+        getCardsDetailsAPI(activeCard.card_hash_id)
       );
       if (response.status === "success") {
         setActiveCardDetails(response.data[0]);
@@ -1597,21 +1643,21 @@ export const CreditCardView = ({
 
         <Card className="bg-light border p-4">
           <h5 className="mb-0 d-flex align-items-center fw-600">
-            Card Ending With: {activeCard?.maskedCardNumber?.slice(-4)}
+            Card Ending With: {activeCard?.masked_card_number?.slice(-4)}
             <label
               htmlFor=""
               className={`${
-                activeCard?.cardStatus === "ACTIVE"
+                activeCard?.card_status === "ACTIVE"
                   ? "bg-success text-white"
-                  : activeCard?.cardStatus === "INACTIVE"
+                  : activeCard?.card_status === "INACTIVE"
                   ? "bg-secondary text-white"
-                  : activeCard?.cardStatus === "PENDING"
+                  : activeCard?.card_status === "PENDING"
                   ? "bg-warning text-dark"
                   : "bg-danger text-white"
               } px-2 py-1 border-0 rounded-pill text-center fw-500 ms-2`}
               style={{ fontSize: 10 }}
             >
-              {activeCard?.cardStatus}
+              {activeCard?.card_status}
             </label>
           </h5>
 
@@ -1751,7 +1797,7 @@ export const CreditCardView = ({
                 </Tooltip>
               )}
 
-              {activeCard?.cardStatus === "ACTIVE" ? (
+              {activeCard?.card_status === "ACTIVE" ? (
                 <Tooltip
                   title="Block Card"
                   slotProps={{
@@ -1794,14 +1840,17 @@ export const CreditCardView = ({
                   <IconButton
                     variant="outline-light"
                     onClick={() =>
-                      handleCardUpdate({ card_status: "INACTIVE" })
+                      handleCardUpdate({
+                        card_status: "INACTIVE",
+                        updated_by: "test",
+                      })
                     }
                     className="rounded-circle bg-white border-danger border cursor-pointer"
                   >
                     <Block className="text-danger" fontSize="small" />
                   </IconButton>
                 </Tooltip>
-              ) : activeCard?.cardStatus === "INACTIVE" ? (
+              ) : activeCard?.card_status === "INACTIVE" ? (
                 <Tooltip
                   title="Unblock Card"
                   slotProps={{
@@ -1843,7 +1892,12 @@ export const CreditCardView = ({
                 >
                   <IconButton
                     variant="outline-light"
-                    onClick={() => handleCardUpdate({ card_status: "ACTIVE" })}
+                    onClick={() =>
+                      handleCardUpdate({
+                        card_status: "ACTIVE",
+                        updated_by: "test",
+                      })
+                    }
                     className="rounded-circle bg-white border-success border cursor-pointer"
                   >
                     <ReplayCircleFilled
@@ -1903,6 +1957,283 @@ export const CreditCardView = ({
       </div>
     </Drawer>
   );
+
+  // const DrawerComponent = () => (
+  //   <Drawer open={openDrawer} onClose={handleCloseDrawer} anchor="right">
+  //     <div className="p-4" style={{ width: 500 }}>
+  //       {/* Header */}
+  //       <div className="d-flex justify-content-between w-100 align-items-center pb-3 border-bottom mb-4">
+  //         <h6 className="mb-0 fw-600">Card details</h6>
+  //         <IconButton onClick={handleCloseDrawer} className="p-1">
+  //           <Close color="secondary" fontSize="small" />
+  //         </IconButton>
+  //       </div>
+
+  //       {/* Card Visual Section */}
+  //       <div className="mb-4">
+  //         <div
+  //           className="position-relative bg-light rounded-3 p-4"
+  //           style={{ height: 280 }}
+  //         >
+  //           {cardDetailsLoading ? (
+  //             <div className="d-flex flex-column justify-content-center align-items-center h-100 gap-3">
+  //               <MoonLoader size={45} />
+  //               <span className="fs-7 text-secondary fw-500">
+  //                 Loading your card details...
+  //               </span>
+  //             </div>
+  //           ) : (
+  //             <>
+  //               {/* Virtual Card Display */}
+  //               <div
+  //                 className="mx-auto rounded-3 position-relative overflow-hidden"
+  //                 style={{
+  //                   width: 320,
+  //                   height: 200,
+  //                   background:
+  //                     "linear-gradient(135deg, #e8e9ea 0%, #f5f5f5 100%)",
+  //                   boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+  //                 }}
+  //               >
+  //                 {/* Card Content */}
+  //                 <div className="p-3 h-100 d-flex flex-column justify-content-between text-dark">
+  //                   <div className="d-flex justify-content-between align-items-start">
+  //                     <div>
+  //                       <div
+  //                         className="fw-500 text-uppercase"
+  //                         style={{ fontSize: 11, letterSpacing: 1 }}
+  //                       >
+  //                         VIRTUAL
+  //                       </div>
+  //                     </div>
+  //                     <div className="d-flex align-items-center gap-2">
+  //                       <img
+  //                         src="/airwallex-logo.svg"
+  //                         alt="Airwallex"
+  //                         style={{ height: 20 }}
+  //                       />
+  //                     </div>
+  //                   </div>
+
+  //                   <div className="mt-4">
+  //                     <div className="fw-600 mb-2" style={{ fontSize: 14 }}>
+  //                       {state.name ||
+  //                         activeCard?.cardholder_name ||
+  //                         "Demozoqq"}
+  //                     </div>
+  //                     <div className="d-flex align-items-center gap-2">
+  //                       <span
+  //                         className="fw-500"
+  //                         style={{ fontSize: 16, letterSpacing: 2 }}
+  //                       >
+  //                         ••••{" "}
+  //                         {activeCard?.masked_card_number?.slice(-4) || "5182"}
+  //                       </span>
+  //                     </div>
+  //                   </div>
+
+  //                   <div className="d-flex justify-content-end">
+  //                     <div className="fw-bold" style={{ fontSize: 24 }}>
+  //                       VISA
+  //                     </div>
+  //                     <div className="ms-2 text-muted" style={{ fontSize: 10 }}>
+  //                       Business
+  //                     </div>
+  //                   </div>
+  //                 </div>
+  //               </div>
+
+  //               {/* View Card Details Button */}
+  //               <div className="text-center mt-3">
+  //                 {state.number ? (
+  //                   <button
+  //                     onClick={() =>
+  //                       setState({
+  //                         number: "",
+  //                         expiry: "",
+  //                         cvc: "",
+  //                         name: "",
+  //                         focus: "",
+  //                       })
+  //                     }
+  //                     className="btn btn-link text-decoration-none d-flex align-items-center justify-content-center mx-auto"
+  //                     style={{ fontSize: 14, color: "#6366f1" }}
+  //                   >
+  //                     <VisibilityOff className="me-2" fontSize="small" />
+  //                     Hide card details
+  //                   </button>
+  //                 ) : (
+  //                   <button
+  //                     onClick={handleFetchCardDetails}
+  //                     className="btn btn-link text-decoration-none d-flex align-items-center justify-content-center mx-auto"
+  //                     style={{ fontSize: 14, color: "#6366f1" }}
+  //                   >
+  //                     <Visibility className="me-2" fontSize="small" />
+  //                     View card details
+  //                   </button>
+  //                 )}
+  //               </div>
+  //             </>
+  //           )}
+  //         </div>
+  //       </div>
+
+  //       {/* Card Information */}
+  //       <div className="bg-white rounded-3 border border-light">
+  //         {/* Card Basic Info */}
+  //         <div className="p-4 border-bottom border-light">
+  //           <div className="row g-3">
+  //             <div className="col-12">
+  //               <div className="d-flex justify-content-between align-items-center">
+  //                 <div>
+  //                   <label className="text-muted mb-1" style={{ fontSize: 12 }}>
+  //                     Card nickname
+  //                   </label>
+  //                   <div className="fw-500" style={{ fontSize: 14 }}>
+  //                     {activeCard?.card_nickname || "Preeti"}
+  //                   </div>
+  //                 </div>
+  //                 <div className="text-end">
+  //                   <label className="text-muted mb-1" style={{ fontSize: 12 }}>
+  //                     Card type
+  //                   </label>
+  //                   <div className="fw-500" style={{ fontSize: 14 }}>
+  //                     {activeCard?.card_type || "Company card"}
+  //                   </div>
+  //                 </div>
+  //               </div>
+  //             </div>
+
+  //             <div className="col-12">
+  //               <div className="d-flex justify-content-between align-items-center">
+  //                 <div>
+  //                   <label className="text-muted mb-1" style={{ fontSize: 12 }}>
+  //                     Card status
+  //                   </label>
+  //                   <div>
+  //                     <span
+  //                       className={`${
+  //                         activeCard?.card_status === "ACTIVE"
+  //                           ? "bg-success text-white"
+  //                           : activeCard?.card_status === "INACTIVE"
+  //                           ? "bg-secondary text-white"
+  //                           : activeCard?.card_status === "PENDING"
+  //                           ? "bg-warning text-dark"
+  //                           : "bg-danger text-white"
+  //                       } px-2 py-1 rounded-pill fw-500`}
+  //                       style={{ fontSize: 11 }}
+  //                     >
+  //                       {activeCard?.card_status || "Active"}
+  //                     </span>
+  //                   </div>
+  //                 </div>
+  //                 <div className="text-end">
+  //                   <label className="text-muted mb-1" style={{ fontSize: 12 }}>
+  //                     Card purpose
+  //                   </label>
+  //                   <div className="fw-500" style={{ fontSize: 14 }}>
+  //                     {activeCard?.card_purpose || "Office supplies"}
+  //                   </div>
+  //                 </div>
+  //               </div>
+  //             </div>
+  //           </div>
+  //         </div>
+
+  //         {/* Card Contacts */}
+  //         <div className="p-4 border-bottom border-light">
+  //           <label className="text-muted mb-2" style={{ fontSize: 12 }}>
+  //             Card contacts
+  //           </label>
+  //           <div
+  //             className="fw-500 text-primary text-decoration-underline"
+  //             style={{ fontSize: 14, cursor: "pointer" }}
+  //           >
+  //             {activeCard?.card_contacts || "John Livonee"}
+  //           </div>
+  //         </div>
+
+  //         {/* Billing Address */}
+  //         <div className="p-4">
+  //           <label className="text-muted mb-2" style={{ fontSize: 12 }}>
+  //             Billing address
+  //           </label>
+  //           <div className="fw-500" style={{ fontSize: 14 }}>
+  //             {activeCard?.billing_address ||
+  //               "Melbourne St, Melbourne St, Melbourne, VIC, 3000, Singapore"}
+  //           </div>
+  //         </div>
+  //       </div>
+
+  //       {/* Action Buttons */}
+  //       <div className="mt-4 d-flex gap-2">
+  //         {activeCard?.card_status === "ACTIVE" ? (
+  //           <button
+  //             onClick={() => handleCardUpdate({ card_status: "INACTIVE" })}
+  //             className="btn btn-outline-danger btn-sm d-flex align-items-center"
+  //           >
+  //             <Block className="me-2" fontSize="small" />
+  //             Block Card
+  //           </button>
+  //         ) : activeCard?.card_status === "INACTIVE" ? (
+  //           <button
+  //             onClick={() => handleCardUpdate({ card_status: "ACTIVE" })}
+  //             className="btn btn-outline-success btn-sm d-flex align-items-center"
+  //           >
+  //             <ReplayCircleFilled className="me-2" fontSize="small" />
+  //             Unblock Card
+  //           </button>
+  //         ) : null}
+
+  //         <button className="btn btn-primary btn-sm ms-auto d-flex align-items-center">
+  //           <Edit className="me-2" fontSize="small" />
+  //           Manage card
+  //         </button>
+  //       </div>
+
+  //       {/* PIN Section (if hash exists) */}
+  //       {hash && (
+  //         <div className="mt-4">
+  //           <div className="border rounded-3 overflow-hidden">
+  //             <iframe
+  //               src={`https://demo.airwallex.com/issuing/pci/v2/${activeCard?.card_id}/pin#${hash}`}
+  //               style={{ height: "225px", width: "100%", border: "none" }}
+  //             />
+  //           </div>
+  //         </div>
+  //       )}
+
+  //       {/* Additional Card Details Accordion */}
+  //       {activeCardDetails && (
+  //         <Accordion
+  //           className="mt-4 border rounded-3"
+  //           expanded={isAccordionOpen}
+  //           onChange={handleAccordionChange}
+  //         >
+  //           <AccordionSummary
+  //             expandIcon={<ExpandMore />}
+  //             aria-controls="panel1-content"
+  //             id="panel1-header"
+  //           >
+  //             <Typography
+  //               component="span"
+  //               sx={{
+  //                 fontFamily: "inherit",
+  //                 fontSize: 14,
+  //                 fontWeight: 500,
+  //               }}
+  //             >
+  //               Additional Details
+  //             </Typography>
+  //           </AccordionSummary>
+  //           <AccordionDetails>
+  //             <CardDetails data={activeCardDetails} />
+  //           </AccordionDetails>
+  //         </Accordion>
+  //       )}
+  //     </div>
+  //   </Drawer>
+  // );
 
   const navigate = useNavigate();
 
@@ -1994,7 +2325,7 @@ export const CreditCardView = ({
                           top: "35px",
                         }}
                       >
-                        {apiCardType === "GPR_PHY" ? "PHYSICAL" : "VIRTUAL"}
+                        {apicard_type === "GPR_PHY" ? "PHYSICAL" : "VIRTUAL"}
                       </p>
                       <div
                         className="d-flex flex-column gap-3 justify-content-between"
@@ -2042,9 +2373,9 @@ export const CreditCardView = ({
                       <div
                         style={{
                           backgroundColor:
-                            cardStatus?.toLowerCase() === "active"
+                            card_status?.toLowerCase() === "active"
                               ? "green"
-                              : cardStatus?.toLowerCase() === "suspended"
+                              : card_status?.toLowerCase() === "suspended"
                               ? "red"
                               : "yellow",
                           borderRadius: "50%",
@@ -2054,11 +2385,11 @@ export const CreditCardView = ({
                         }}
                       ></div>
                       <span style={{ fontWeight: "600", fontSize: 10 }}>
-                        {cardStatus?.toUpperCase()}
+                        {card_status?.toUpperCase()}
                       </span>
                     </div>
                     <div style={{ transform: "rotate(-90deg)" }}>
-                      {cardLogos[detectCardType(maskedCardNumber)] ||
+                      {cardLogos[detectcard_type(masked_card_number)] ||
                         cardLogos["Other"]}
                     </div>
                   </>
@@ -2093,7 +2424,7 @@ export const CreditCardView = ({
                 }}
               >
                 {!show
-                  ? formatCardNumberDisplay(maskedCardNumber)
+                  ? formatCardNumberDisplay(masked_card_number)
                   : cardNumber || "XXXX XXXX XXXX XXXX"}
               </div> */}
 
@@ -2107,13 +2438,15 @@ export const CreditCardView = ({
                     <div>
                       <label className="fs-9">Card Type</label>
                       <div style={{ fontWeight: "600", fontSize: 12 }}>
-                        {apiCardType === "GPR_PHY" ? "PHYSICAL" : "VIRTUAL"}
+                        {apicard_type === "GPR_PHY" ? "PHYSICAL" : "VIRTUAL"}
                       </div>
                     </div>
                     <div>
                       <label className="fs-9">Last 4 Digits</label>
                       <div style={{ fontWeight: "600", fontSize: 12 }}>
-                        {maskedCardNumber ? maskedCardNumber.slice(-4) : "****"}{" "}
+                        {masked_card_number
+                          ? masked_card_number.slice(-4)
+                          : "****"}{" "}
                       </div>
                     </div>
                   </>
@@ -2191,7 +2524,7 @@ export const CreditCardView = ({
                 </Tooltip>
               </div>
             )}
-            {item.cardType !== "virtual" && // Condition updated
+            {item.card_type !== "virtual" && // Condition updated
               location.pathname === "/cards" &&
               !hide && (
                 <div className="border rounded-pill bg-white">

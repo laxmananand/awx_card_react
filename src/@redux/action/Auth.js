@@ -54,15 +54,15 @@ export const cognitoGetUser =
           ...response.data,
           // userId: "2ec3aaa9-1b6a-4175-883f-0c47cf264718",
           userId: userId?.value,
-          cardHolderId: findCardholder?.value,
+          cardholder_id: findCardholder?.value,
         })
       );
       // ✅ Directly fetch cardholder details
-      const cardholderId = findCardholder?.value;
-      console.log("Cardholder ID: rohit ", cardholderId);
-      if (cardholderId) {
+      const cardholder_id = findCardholder?.value;
+      console.log("Cardholder ID: rohit ", cardholder_id);
+      if (cardholder_id) {
         // ✅ Cardholder ID mila toh fetchUser karo
-        await dispatch(fetchUser(cardholderId));
+        await dispatch(fetchUser(cardholder_id));
       } else {
         console.warn("No cardholder ID found!");
       }
@@ -340,7 +340,7 @@ export const logout =
   };
 
 // Fetch User Details
-// 
+//
 // export const fetchUser = (cardholderId) => async (dispatch, getState) => {
 //   try {
 //     // Apne Node.js backend proxy endpoint ko hit karo
@@ -371,22 +371,23 @@ export const logout =
 //   }
 // };
 
-
-export const fetchUser = (cardholderId) => async (dispatch, getState) => {
+export const fetchUser = (cardholder_id) => async (dispatch, getState) => {
   try {
-    const url = `${process.env.VITE_API_ZOOQ}/awx/fetch-cardholder-details-awx?id=${cardholderId}`;
+    const url = `${process.env.VITE_API_ZOOQ}/awx/fetch-cardholder-details-awx?id=${cardholder_id}`;
     console.log("👉 Fetch Cardholder URL:", url);
-    console.log("📌 cardholderId:", cardholderId);
- 
+    console.log("📌 cardholder_id:", cardholder_id);
+
     const response = await axiosInstance.get(url);
- 
+
     console.log("✅ Response:", response);
     console.log("📄 Cardholder Details:", response.data?.data?.[0]);
- 
+
     if (response.data?.data?.[0]) {
-      dispatch(setUserDetails({
-        cardholderDetails: response.data.data[0],
-      }));
+      dispatch(
+        setUserDetails({
+          cardholderDetails: response.data.data[0],
+        })
+      );
       dispatch(setOnboarded(true));
       return response.data;
     } else {

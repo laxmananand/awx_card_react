@@ -203,23 +203,24 @@ export const getAccountStatementAPI =
   };
 
 // Get List of Cards
+//LAxman Anand: Updated to use new API endpoint
 export const getCardsAPI =
-  (userId, cardHolderId, type) => async (dispatch, getState) => {
+  (userId, cardholder_id, type) => async (dispatch, getState) => {
     // Check existing account in Redux state
     if (type === "update") {
       try {
         // const id = useSelector((state) => state.auth.user.userId);
         // console.log("User ID:", id);
-        // const cardHolderId = useSelector(
-        //   (state) => state.auth.user.cardHolderId
+        // const cardholder_id = useSelector(
+        //   (state) => state.auth.user.cardholder_id
         // );
-        console.log("Card Holder ID:", cardHolderId);
+        console.log("Card Holder ID:", cardholder_id);
         console.log("userId:", userId);
         //const url = `${process.env.VITE_apiurl}/caas/card/list/${userId}/${accountId}`;
         // const url = `${process.env.VITE_API_ZOOQ}/expense/listcardsAWX`;
         const url = `${process.env.VITE_API_ZOOQ}/expense/listCardsByCardHolderId_AWX`;
         const response = await axiosInstance.get(url, {
-          params: { cardholder_id: cardHolderId },
+          params: { cardholder_id: cardholder_id },
           headers: { "x-user-id": userId },
         }); // Use POST for account creation
         console.log("Cards response:", response.data);
@@ -240,6 +241,7 @@ export const getCardsAPI =
   };
 
 // Get Card Details
+//LAxman Anand: Updated to use new API endpoint
 export const getCardsDetailsAPI = (cardId) => async (dispatch, getState) => {
   let userId = getState().auth?.user?.userId;
   // let accountId = getState().account?.accountDetails[0]?.accountid;
@@ -456,6 +458,44 @@ export const activateCardDetails =
   };
 
 //Temporary Block Card
+// export const temporaryBlockCardDetails =
+//   ({ reason, cardId, setCardLoading, handleCloseCardModalActions }) =>
+//   async (dispatch, getState) => {
+//     if (!reason) {
+//       toast.error("Please enter a temporary block reason to continue...");
+//       return;
+//     }
+
+//     let userId = getState().auth?.userDetails?.id;
+//     // let accountId = getState().account?.accountDetails[0]?.accountid;
+
+//     setCardLoading(true);
+
+//     try {
+//       const url = `${process.env.VITE_apiurl}/caas/card/block/${userId}/${accountId}/${cardId}`;
+
+//       const body = {
+//         blockAction: "temporaryBlock",
+//         reason: reason,
+//       };
+
+//       const response = await axiosInstance.post(url, body); // Use POST for account creation
+//       if (response.data.status === "BAD_REQUEST") {
+//         toast.error(response.data.message);
+//       } else if (response.data.status === "SUCCESS") {
+//         await dispatch(getCardsAPI(userId, accountId, "update"));
+//         toast.success(response.data.message);
+//         handleCloseCardModalActions();
+//       }
+
+//       return response.data;
+//     } catch (error) {
+//       return handleApiError(error);
+//     } finally {
+//       setCardLoading(false);
+//     }
+//   };
+
 export const temporaryBlockCardDetails =
   ({ reason, cardId, setCardLoading, handleCloseCardModalActions }) =>
   async (dispatch, getState) => {
@@ -464,20 +504,57 @@ export const temporaryBlockCardDetails =
       return;
     }
 
-    let userId = getState().auth?.userDetails?.id;
-    let accountId = getState().account?.accountDetails[0]?.accountid;
+    let userId = getState().auth?.user?.userId;
+    let cardholder_id = getState().auth?.user?.cardholder_id;
+    // let accountId = getState().account?.accountDetails[0]?.accountid;
 
     setCardLoading(true);
 
     try {
-      const url = `${process.env.VITE_apiurl}/caas/card/block/${userId}/${accountId}/${cardId}`;
+      const url = `${process.env.VITE_API_ZOOQ}/expense/updateCard_awx?id=${cardId}`;
 
       const body = {
-        blockAction: "temporaryBlock",
-        reason: reason,
+        card_status: "INACTIVE",
+        updated_by: "test",
       };
 
-      const response = await axiosInstance.post(url, body); // Use POST for account creation
+      const headers = {
+        "x-user-id": userId,
+      };
+
+      const response = await axiosInstance.patch(url, body, { headers });
+      if (response.data.status === "BAD_REQUEST") {
+        toast.error(response.data.message);
+      } else if (response.data.status === "SUCCESS") {
+        await dispatch(getCardsAPI(userId, cardholder_id, "update"));
+        toast.success(response.data.message);
+        handleCloseCardModalActions();
+      }
+
+      return response.data;
+    } catch (error) {
+      return handleApiError(error);
+    } finally {
+      setCardLoading(false);
+    }
+  };
+
+export const updateCardAPI =
+  ({ cardId, updatedData, setCardLoading, handleCloseCardModalActions }) =>
+  async (dispatch, getState) => {
+    let userId = getState().auth?.user?.userId;
+    console.log("userId:", userId);
+    console.log("cardId:", cardId);
+    console.log("updatedData:", updatedData);
+    setCardLoading(true);
+
+    try {
+      const url = `${process.env.VITE_API_ZOOQ}/expense/updateCard_awx?id=${cardId}`;
+      const headers = {
+        "x-user-id": userId,
+      };
+      const response = await axiosInstance.patch(url, updatedData, { headers });
+
       if (response.data.status === "BAD_REQUEST") {
         toast.error(response.data.message);
       } else if (response.data.status === "SUCCESS") {
@@ -488,6 +565,7 @@ export const temporaryBlockCardDetails =
 
       return response.data;
     } catch (error) {
+      console.log("Error updating card:", error);
       return handleApiError(error);
     } finally {
       setCardLoading(false);
@@ -537,24 +615,28 @@ export const permanentBlockCardDetails =
 export const unBlockCardDetails =
   ({ cardId, setCardLoading }) =>
   async (dispatch, getState) => {
-    let userId = getState().auth?.userDetails?.id;
-    let accountId = getState().account?.accountDetails[0]?.accountid;
+    let userId = getState().auth?.user?.userId;
+    let cardholder_id = getState().auth?.user?.cardholder_id;
+    //let accountId = getState().account?.accountDetails[0]?.accountid;
 
     setCardLoading(true);
 
     try {
-      const url = `${process.env.VITE_apiurl}/caas/card/block/${userId}/${accountId}/${cardId}`;
+      const url = `${process.env.VITE_API_ZOOQ}/expense/updateCard_awx?id=${cardId}`;
 
       const body = {
-        blockAction: "unblock",
-        reason: "recovered",
+        card_status: "ACTIVE",
+        updated_by: "test",
+      };
+      const headers = {
+        "x-user-id": userId,
       };
 
-      const response = await axiosInstance.post(url, body); // Use POST for account creation
+      const response = await axiosInstance.patch(url, body, { headers });
       if (response.data.status === "BAD_REQUEST") {
         toast.error(response.data.message);
       } else if (response.data.status === "SUCCESS") {
-        await dispatch(getCardsAPI(userId, accountId, "update"));
+        await dispatch(getCardsAPI(userId, cardholder_id, "update"));
         toast.success(response.data.message);
         handleCloseCardModalActions();
       }
