@@ -296,17 +296,11 @@ export const sendResetCode =
   async (dispatch) => {
     try {
       setLoading(true);
-      // Attempt to log the user in
-      const url = `${process.env.VITE_apiurl}/utilities/forgotPassword`;
+      // Correct URL with query param
+      const url = `${process.env.VITE_API_ZOOQ}/SignupRoutes/sendOTP?email=${encodeURIComponent(email)}`;
 
-      const body = {
-        ...cognitoRequestBody,
-        username: email,
-      };
-
-      console.log(body);
-
-      const response = await axiosInstance.post(url, body);
+      // Use GET request, no body
+      const response = await axiosInstance.get(url);
       console.log("cognito forgot password: ", response.data);
 
       // Dispatch user to Redux
@@ -314,7 +308,7 @@ export const sendResetCode =
         return { success: false, data: response.data };
       }
 
-      if (response.data.ResponseMetadata.HTTPStatusCode === 200) {
+      if (response.data.ResponseMetadata?.HTTPStatusCode === 200) {
         return { success: true, data: response.data };
       }
     } catch (error) {
@@ -472,27 +466,40 @@ export const fetchBusiness = (email, type) => async (dispatch, getState) => {
 };
 
 // Fetch KYC Details
-export const fetchKyc = (email, type) => async (dispatch, getState) => {
-  const kycDetails = getState().auth?.kycDetails;
-
-  if (type === "fetch" || kycDetails) {
-    return { ...kycDetails, status: "SUCCESS" };
-  }
+export const fetchKyc = (cardholderId) => async (dispatch, getState) => {
+  if (!cardholderId) return { status: "ERROR", message: "Cardholder ID is required" };
 
   try {
-    const url = `${process.env.VITE_apiurl}/caas/kyc/${email}`;
-    const response = await axiosInstance.get(url);
+    const state = getState();
+    const userId = "acct_ot2tV8ecOZij3EMn9Ksuzg"||state.auth?.user?.id;
+    const token = state.auth?.token;
 
-    if (response.data.kycStatus || response.data.complianceStatus) {
-      dispatch(setKycDetails(response.data)); // Save KYC details to Redux
-      return { ...response.data, status: "SUCCESS" };
-    } else {
-      throw new Error(response.data.message || "Failed to fetch KYC details");
-    }
+    const headers = {
+      "x-user-id": userId,
+      Authorization: `Bearer ${token}`,
+    };
+
+    const url = `http://localhost:9000/awx/fetch-cardholder-details-awx?id=${cardholderId}`;
+    const response = await axios.get(url, { headers });
+
+    const data = response.data;
+
+
+    // You can update this based on actual structure of `data`
+    const kycInfo = {
+      kycStatus: data?.kycStatus || "pending", // update based on actual fields
+      complianceStatus: data?.complianceStatus || null,
+      ...data,
+    };
+
+    dispatch(setKycDetails(kycInfo));
+
+    return { ...kycInfo, status: "SUCCESS" };
   } catch (error) {
     return handleApiError(error);
   }
 };
+
 
 // Fetch KYB Details
 export const fetchKyb = (userId, type) => async (dispatch, getState) => {
@@ -525,6 +532,8 @@ export const fetchKyb = (userId, type) => async (dispatch, getState) => {
 export const updateUserDetails = ({ cardholderId, body }) => async (dispatch, getState) => {
   console.log('preeti 1')
   const userDetails = getState()?.auth?.userDetails;
+  const userId=useSelector((state)=>state.auth.userId);
+  console.log(userId);
   console.log("preeti 2 userDetails #",userDetails)
   console.log("preeti", cardholderId)
   if (!cardholderId) {
@@ -547,9 +556,9 @@ export const updateUserDetails = ({ cardholderId, body }) => async (dispatch, ge
   try {
     const response = await axiosInstance.patch(url, body, {
       headers: {
-        "x-user-id": "acct_ot2tV8ecOZij3EMn9Ksuzg" || "",
-        "x-request-id": crypto.randomUUID(),
-        "Content-Type": "application/json",
+        "x-user-id": userId,
+        // "x-request-id": crypto.randomUUID(),
+        // "Content-Type": "application/json",
       },
     });
     console.log('preei res ',response.data);

@@ -65,6 +65,7 @@ import {
   forgotPassword,
   updateBusinessDetails,
   updateUserDetails,
+  sendResetCode,
 } from "../../@redux/action/Auth";
 import {
   Form,
@@ -154,7 +155,7 @@ export const Profile = () => {
       (option) => option.value === userDetails?.cardholderDetails?.mobileNumber?.split("-")[0] || ""
     )
   );
-  const [mobile, setMobile] = useState(userDetails?.cardholderDetails?.mobileNumber || "");
+  const [mobile, setMobile] = useState(userDetails?.cardholderDetails?.mobileNumber.split("-")[1] || "");
   // const [nationality, setNationality] = useState(
   //   nationalityList.find(
   //     (option) => option.label === userDetails?.nationality || ""
@@ -986,7 +987,7 @@ const getUpdatedData = () => {
                   />
 
                   { <CustomSelect
-                    disabled={edit}
+                    disabled
                     options={titleList}
                     id="title"
                     value={title}
@@ -998,7 +999,7 @@ const getUpdatedData = () => {
                   /> }
 
                   <CustomInput
-                    disabled={edit}
+                    disabled
                     value={firstName}
                     onInput={setFirstName}
                     leftIcon={<AccountCircle />}
@@ -1009,7 +1010,7 @@ const getUpdatedData = () => {
                     type={"alpha"}
                   />
                   <CustomInput
-                    disabled={edit}
+                    disabled
                     value={middleName}
                     onInput={setMiddleName}
                     leftIcon={<AccountCircle />}
@@ -1020,7 +1021,7 @@ const getUpdatedData = () => {
                   />
 
                   <CustomInput
-                    disabled={edit}
+                    disabled
                     value={lastName}
                     onInput={setLastName}
                     leftIcon={<AccountCircle />}
@@ -1052,7 +1053,7 @@ const getUpdatedData = () => {
                   /> */}
 
                   <CustomSelect
-                    disabled={edit}
+                    disabled
                     options={mobileCountryCodeList}
                     id="mobileCountryCode"
                     value={mobileCountryCode}
@@ -1940,12 +1941,12 @@ export const Security = () => {
       try {
         const response = await dispatch(sendResetCode({ email, setLoading }));
 
-        if (response.success) {
+        if (response?.success) {
           setSuccessText("Password reset email sent successfully.");
         } else {
           // Display error message returned from the login action
-          if (result.data.errorCode && result.data.msg) {
-            setErrorText(result.data.msg.split("operation: ")[1]);
+          if (response?.data?.errorCode && response?.data?.msg) {
+            setErrorText(response.data.msg.split("operation: ")[1]);
           } else {
             setErrorText("Something went wrong, please try again later.");
           }
