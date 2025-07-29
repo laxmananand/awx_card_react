@@ -296,17 +296,11 @@ export const sendResetCode =
   async (dispatch) => {
     try {
       setLoading(true);
-      // Attempt to log the user in
-      const url = `${process.env.VITE_apiurl}/utilities/forgotPassword`;
+      // Correct URL with query param
+      const url = `${process.env.VITE_API_ZOOQ}/SignupRoutes/sendOTP?email=${encodeURIComponent(email)}`;
 
-      const body = {
-        ...cognitoRequestBody,
-        username: email,
-      };
-
-      console.log(body);
-
-      const response = await axiosInstance.post(url, body);
+      // Use GET request, no body
+      const response = await axiosInstance.get(url);
       console.log("cognito forgot password: ", response.data);
 
       // Dispatch user to Redux
@@ -314,7 +308,7 @@ export const sendResetCode =
         return { success: false, data: response.data };
       }
 
-      if (response.data.ResponseMetadata.HTTPStatusCode === 200) {
+      if (response.data.ResponseMetadata?.HTTPStatusCode === 200) {
         return { success: true, data: response.data };
       }
     } catch (error) {
@@ -371,10 +365,41 @@ export const logout =
 //   }
 // };
 
+<<<<<<< HEAD
 export const fetchUser = (cardholder_id) => async (dispatch, getState) => {
+=======
+
+// export const fetchUser = (cardholderId) => async (dispatch, getState) => {
+//   try {
+//     const url = `${process.env.VITE_API_ZOOQ}/awx/fetch-cardholder-details-awx?id=${cardholderId}`;
+//     console.log("👉 Fetch Cardholder URL:", url);
+//     console.log("📌 cardholderId:", cardholderId);
+ 
+//     const response = await axiosInstance.get(url);
+ 
+//     console.log("✅ Response:", response);
+//     console.log("📄 Cardholder Details:", response.data?.data?.[0]);
+ 
+//     if (response.data?.data?.[0]) {
+//       dispatch(setUserDetails({
+//         cardholderDetails: response.data.data[0],
+//       }));
+//       dispatch(setOnboarded(true));
+//       return response.data;
+//     } else {
+//       return { status: "ERROR", message: "No data found" };
+//     }
+//   } catch (error) {
+//     return handleApiError(error);
+//   }
+// };
+
+export const fetchUser = (cardholderId) => async (dispatch, getState) => {
+>>>>>>> d23bff5e1a88f6f6d988047c975f02edbbe8e5f4
   try {
     const url = `${process.env.VITE_API_ZOOQ}/awx/fetch-cardholder-details-awx?id=${cardholder_id}`;
     console.log("👉 Fetch Cardholder URL:", url);
+<<<<<<< HEAD
     console.log("📌 cardholder_id:", cardholder_id);
 
     const response = await axiosInstance.get(url);
@@ -388,6 +413,40 @@ export const fetchUser = (cardholder_id) => async (dispatch, getState) => {
           cardholderDetails: response.data.data[0],
         })
       );
+=======
+    console.log("📌 cardholderId:", cardholderId);
+
+    const response = await axiosInstance.get(url);
+
+    const data = response.data?.data?.[0];
+
+    if (data) {
+      const cardholderDetails = {
+        title: data.individual?.name?.title,
+        firstName: data.individual?.name?.first_name,
+        middleName: data.individual?.name?.middle_name,
+        lastName: data.individual?.name?.last_name,
+        gender: data.individual?.gender, // If present
+        dateOfBirth: data.individual?.date_of_birth,
+        mobileNumber: data.mobile_number,
+        deliveryAddress: data.postal_address?.line1,
+        deliveryCity: data.postal_address?.city,
+        deliveryState: data.postal_address?.state,
+        deliveryCountry: data.postal_address?.country,
+        deliveryPostcode: data.postal_address?.postcode,
+        billingAddress: data.individual?.address?.line1,
+        billingCity: data.individual?.address?.city,
+        billingState: data.individual?.address?.state,
+        billingCountry: data.individual?.address?.country,
+        billingPostcode: data.individual?.address?.postcode,
+      };
+
+      dispatch(setUserDetails({
+        cardholderDetails,
+        nationality: data.individual?.identification?.country,
+        dateOfBirth: data.individual?.date_of_birth
+      }));
+>>>>>>> d23bff5e1a88f6f6d988047c975f02edbbe8e5f4
       dispatch(setOnboarded(true));
       return response.data;
     } else {
@@ -397,6 +456,7 @@ export const fetchUser = (cardholder_id) => async (dispatch, getState) => {
     return handleApiError(error);
   }
 };
+
 
 // Fetch User Details
 export const fetchBusiness = (email, type) => async (dispatch, getState) => {
@@ -426,27 +486,40 @@ export const fetchBusiness = (email, type) => async (dispatch, getState) => {
 };
 
 // Fetch KYC Details
-export const fetchKyc = (email, type) => async (dispatch, getState) => {
-  const kycDetails = getState().auth?.kycDetails;
-
-  if (type === "fetch" || kycDetails) {
-    return { ...kycDetails, status: "SUCCESS" };
-  }
+export const fetchKyc = (cardholderId) => async (dispatch, getState) => {
+  if (!cardholderId) return { status: "ERROR", message: "Cardholder ID is required" };
 
   try {
-    const url = `${process.env.VITE_apiurl}/caas/kyc/${email}`;
-    const response = await axiosInstance.get(url);
+    const state = getState();
+    const userId = "acct_ot2tV8ecOZij3EMn9Ksuzg"||state.auth?.user?.id;
+    const token = state.auth?.token;
 
-    if (response.data.kycStatus || response.data.complianceStatus) {
-      dispatch(setKycDetails(response.data)); // Save KYC details to Redux
-      return { ...response.data, status: "SUCCESS" };
-    } else {
-      throw new Error(response.data.message || "Failed to fetch KYC details");
-    }
+    const headers = {
+      "x-user-id": userId,
+      Authorization: `Bearer ${token}`,
+    };
+
+    const url = `http://localhost:9000/awx/fetch-cardholder-details-awx?id=${cardholderId}`;
+    const response = await axios.get(url, { headers });
+
+    const data = response.data;
+
+
+    // You can update this based on actual structure of `data`
+    const kycInfo = {
+      kycStatus: data?.kycStatus || "pending", // update based on actual fields
+      complianceStatus: data?.complianceStatus || null,
+      ...data,
+    };
+
+    dispatch(setKycDetails(kycInfo));
+
+    return { ...kycInfo, status: "SUCCESS" };
   } catch (error) {
     return handleApiError(error);
   }
 };
+
 
 // Fetch KYB Details
 export const fetchKyb = (userId, type) => async (dispatch, getState) => {
@@ -473,26 +546,64 @@ export const fetchKyb = (userId, type) => async (dispatch, getState) => {
 };
 
 //Update user details
-export const updateUserDetails =
-  ({ body }) =>
-  async (dispatch, getState) => {
-    const userDetails = getState().auth.userDetails;
 
-    try {
-      const url = `${process.env.VITE_apiurl}/caas/user/${userDetails?.id}`;
-      const response = await axiosInstance.patch(url, body);
+// Update cardholder details using AWX API
 
-      if (response.data.status === "SUCCESS") {
-        toast.success(response.data.message);
-        await dispatch(fetchUser(userDetails?.email, "update")); // Save KYC details to Redux
-        return response.data;
-      } else {
-        toast.error(response.data.message || "Failed to updated user details");
-      }
-    } catch (error) {
-      return handleApiError(error);
+export const updateUserDetails = ({ cardholderId, body }) => async (dispatch, getState) => {
+  console.log('preeti 1')
+  const userDetails = getState()?.auth?.userDetails;
+  const userId=useSelector((state)=>state.auth.userId);
+  console.log(userId);
+  console.log("preeti 2 userDetails #",userDetails)
+  console.log("preeti", cardholderId)
+  if (!cardholderId) {
+    console.error("❌ cardholderId is missing.");
+    toast.error("Cardholder ID is missing.");
+    return;
+  }
+ 
+  if (!body || Object.keys(body).length === 0) {
+    console.warn("⚠️ No updated fields.");
+    toast.error("Please change at least one field.");
+    return;
+  }
+ 
+  const url = `${process.env.VITE_API_ZOOQ}/expense/updateCardHolder_AWX?id=${cardholderId}`;
+ 
+  console.log("📤 PATCH URL:", url);
+  console.log("📦 Payload:", JSON.stringify(body, null, 2));
+ 
+  try {
+    const response = await axiosInstance.patch(url, body, {
+      headers: {
+        "x-user-id": userId,
+        // "x-request-id": crypto.randomUUID(),
+        // "Content-Type": "application/json",
+      },
+    });
+    console.log('preei res ',response.data);
+    if (response.status === 200) {
+      toast.success("Cardholder updated successfully.");
+      console.log("✅ Update Response:", response.data);
+ 
+      await dispatch(fetchUser(cardholderId)); // Refresh data
+ 
+      return { status: "SUCCESS", data: response.data };
+    } else {
+      toast.error(response.data?.message || "Update failed.");
+      return { status: "ERROR", message: response.data?.message || "Update failed." };
     }
-  };
+  } catch (error) {
+    console.error("❌ Update failed:", error);
+    toast.error("Something went wrong while updating.");
+    return handleApiError(error);
+  }
+};
+ 
+ 
+
+
+
 
 //Update user details
 export const updateBusinessDetails =

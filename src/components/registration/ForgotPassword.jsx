@@ -61,13 +61,14 @@ export const ForgotPassword = () => {
 
     try {
       const response = await dispatch(sendResetCode({ email, setLoading }));
-
-      if (response.success) {
+      
+      if (response?.success) {
         setSuccessText("Password reset email sent successfully.");
+        setStage(1); // <— move to next stage!
       } else {
         // Display error message returned from the login action
-        if (result.data.errorCode && result.data.msg) {
-          setErrorText(result.data.msg.split("operation: ")[1]);
+        if  (response?.data?.errorCode && response?.data?.msg)  {
+          setErrorText(response.data.msg.split("operation: ")[1]);
         } else {
           setErrorText("Something went wrong, please try again later.");
         }
@@ -78,7 +79,60 @@ export const ForgotPassword = () => {
     }
   };
 
-  const handleForgotPassword = async () => {};
+  const handleForgotPassword = async () => {
+
+// Basic validations
+  if (!otp) {
+    setOTPHelperText("Verification code is required.");
+    return;
+  }
+
+  if (!password || !regex.password.pattern.test(password)) {
+    setPasswordHelperText(regex.password.message);
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    setConfirmPasswordHelperText("Passwords do not match.");
+    return;
+  }
+
+  setLoading(true);
+  setErrorText("");
+  setSuccessText("");
+
+  try {
+    const res = await fetch(`${process.env.VITE_apiurl}/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        code: otp,
+        password,
+        region: "us-east-1", // replace or get dynamically
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      setSuccessText("Your password has been reset. Redirecting to login...");
+      setTimeout(() => {
+        navigate("/");
+      }, 3000);
+    } else {
+      setErrorText(data.message || "Failed to reset password.");
+    }
+  } catch (err) {
+    console.error("Reset error:", err);
+    setErrorText("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+
+  };
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [rightIcon, setRightIcon] = useState(<Visibility size={20} />);
